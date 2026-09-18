@@ -34,7 +34,7 @@ class Alley(Room):
     )
     horizon = 104
     edges = {"right": 10}
-    spawns = {"default": (140, 150), 15: (104, 110)}
+    spawns = {"default": (140, 150), 15: (104, 110), 16: (136, 112)}
     looks = {
         "trash": "A green dumpster the size of a small apartment, and better furnished. The lid is open a crack.",
         "dog": "A scruffy brown dog, asleep against the dumpster. One ear twitches. "

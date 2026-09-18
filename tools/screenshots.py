@@ -104,6 +104,15 @@ def main() -> int:
     cmd("use remote", dismiss=False)
     shot("backroom-remote")
     key(pygame.K_SPACE)
+    game.ego.x, game.ego.y = 140, 100
+    cmd("climb stairs")
+    game.messages.clear()
+    game.ego.x, game.ego.y = 60, 130
+    shot("upstairs")
+    game.ego.x, game.ego.y = 116, 112
+    cmd("give rose to dolores", dismiss=False)
+    shot("upstairs-rose")
+    key(pygame.K_SPACE)
     game.new_room(12)
     game.messages.clear()
     game.ego.x, game.ego.y = 40, 112

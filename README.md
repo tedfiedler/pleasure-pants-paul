@@ -22,8 +22,9 @@ original). Type commands such as `look`, `look bar`, `talk to bartender`,
 `inventory`, `score`, `quit`.
 
 Rooms so far: the street outside Rooster's (10), the bar (11), the alley to
-the west (12), the inside of a cab (13), the men's room (14) and the back
-room behind the alley door (15). See the player's guide below.
+the west (12), the inside of a cab (13), the men's room (14), the back room
+behind the alley door (15) and the room upstairs (16). See the player's guide
+below.
 
 Alt-X (or Cmd-X on a Mac) skips the age quiz.
 
@@ -122,6 +123,18 @@ make a man like that stop paying attention, and about who gave you what.
 
 ![Changing the channel](docs/images/backroom-remote.png)
 
+### Upstairs
+
+![Upstairs](docs/images/upstairs.png)
+
+Dolores has a price, a nail file, and a box of chocolates she is not sharing.
+She might soften for a small gesture. What she sells costs thirty dollars,
+and doing business without protection is the oldest death in the genre.
+The store that sells protection isn't built yet, so for now: don't. The
+window is the quick way down.
+
+![A gesture](docs/images/upstairs-rose.png)
+
 ### The cab
 
 ![Inside the cab](docs/images/taxi.png)
@@ -150,12 +163,15 @@ before you do anything clever, and especially before you do anything stupid.
 | 5 | In the alley, by the steel door: `rooster sent me`. Then walk in. |
 | 4 | In the back room, with the drunk's remote: `use remote`. |
 | 5 | While Brick is glued to the fight, walk up the stairs. |
+| 2 | Upstairs, with the rose from the dumpster: `give rose to dolores`. |
+| 3 | Then, at the nightstand: `get chocolates`. |
+| 15 | `Pay dolores`, then `kiss dolores`, with protection in your pocket. Not sold yet. |
 | 1 | On the street: `call a cab`. |
 | 1 each | In the cab: ride to the casino, disco, store or chapel. |
 | 1 | In the cab: `pay the driver`. |
 
-That is 30 points of a possible 222. The rest of the city, and the top of
-the stairs, are under construction.
+That is 50 points of a possible 222, 35 of them reachable today. The rest
+of the city is under construction.
 </details>
 
 The screenshots are regenerated with `uv run python tools/screenshots.py`.

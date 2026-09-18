@@ -230,14 +230,79 @@ def test_remote_distracts_brick_and_stairs_score(game: Game) -> None:
     assert game.score == 4
     drain(game)
     game.ego.x, game.ego.y = 140, 100
-    game.handle_input("climb the stairs")
-    assert game.room is not None and game.room.number == 15 and game.score == 9
-    assert "OPENING SOON" in drain(game)[0]
-    frames = game.room.objects(game)
+    frames = game.room.objects(game) if game.room else []
     assert len(frames) == 2
+    game.handle_input("climb the stairs")
+    assert game.room is not None and game.room.number == 16 and game.score == 9
+    assert "thirty dollars" in drain(game)[0]
 
 
 def test_touching_brick_is_fatal(game: Game) -> None:
     game.new_room(15)
     game.handle_input("kiss brick")
     assert game.dead
+
+
+def upstairs(game: Game) -> Game:
+    game.flags["brick_distracted"] = True
+    game.new_room(16)
+    drain(game)
+    return game
+
+
+def test_rose_charms_dolores_and_unlocks_the_chocolates(game: Game) -> None:
+    upstairs(game)
+    game.ego.x, game.ego.y = 72, 110
+    game.handle_input("get candy")
+    assert "mine" in drain(game)[0] and not game.has("candy")
+    game.give("rose")
+    game.ego.x = 104
+    game.handle_input("give rose to dolores")
+    assert game.flags["rose_given"] and not game.has("rose") and game.score == 2
+    game.ego.x = 72
+    game.handle_input("take the chocolates")
+    assert game.has("candy") and game.score == 5
+
+
+def test_unprotected_business_is_fatal(game: Game) -> None:
+    upstairs(game)
+    game.ego.x, game.ego.y = 104, 110
+    game.handle_input("kiss dolores")
+    assert "Business first" in drain(game)[0]
+    game.vars["money"] = 20
+    game.handle_input("pay dolores")
+    assert "adorable" in drain(game)[0]
+    game.vars["money"] = 40
+    game.handle_input("pay her")
+    assert game.flags["dolores_paid"] and game.vars["money"] == 10
+    drain(game)
+    game.handle_input("kiss dolores")
+    assert game.dead
+    assert game.room is not None and not game.room.objects(game)  # she has gone
+
+
+def test_protected_business_scores(game: Game) -> None:
+    upstairs(game)
+    game.ego.x, game.ego.y = 104, 110
+    game.vars["money"] = 40
+    game.give("protection")
+    game.handle_input("pay")
+    game.handle_input("make love to dolores")
+    assert not game.dead and game.score == 15 and not game.has("protection")
+    assert game.ego.visible
+
+
+def test_window_drops_into_the_alley(game: Game) -> None:
+    upstairs(game)
+    game.handle_input("climb out the window")
+    assert game.room is not None and game.room.number == 12
+    assert (game.ego.x, game.ego.y) == (136, 112)
+
+
+def test_stairs_down_return_to_the_back_room(game: Game) -> None:
+    upstairs(game)
+    game.ego.x, game.ego.y = 60, 166
+    game.ego.set_direction(5)
+    run(game, 4)
+    assert game.room is not None and game.room.number == 15
+    assert game.ego.x == 134

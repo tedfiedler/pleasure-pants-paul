@@ -114,7 +114,7 @@ class BackRoom(Room):
     )
     horizon = 96
     edges = {"bottom": 12}
-    spawns = {"default": (104, 150), 12: (104, 156)}
+    spawns = {"default": (104, 150), 12: (104, 156), 16: (STAIRS_X[0] + 8, 104)}
     looks = {
         "bouncer": "Brick. Six and a half feet of bouncer folded onto a couch, in a pink "
         "shirt that nobody has ever laughed at twice. He is watching the fishing show "
@@ -300,13 +300,7 @@ class BackRoom(Room):
         game.ego.stop()
         if game.flags.get("brick_distracted"):
             game.award("stairs", 5)
-            game.print(
-                "You tiptoe past Brick, who is shouting advice at the television, and "
-                "climb. The music gets louder. The perfume gets closer. At the top of the "
-                "stairs is a door with a heart on it, and a sign: OPENING SOON. Even here. "
-                "You come back down before Brick's fight is over."
-            )
-            game.ego.x, game.ego.y = STAIRS_X[0] + 8, 104
+            game.new_room(16)
         else:
             game.print(
                 "Brick's arm comes out sideways like a railway barrier. \"Where you going, "
