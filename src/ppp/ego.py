@@ -16,28 +16,30 @@ from ppp.pic import Picture
 
 LEGEND = {"h": BLACK, "f": LRED, "w": WHITE, "k": BLACK, "g": YELLOW, "b": BROWN}
 
+# Paul is balding: flesh on top, hair at the sides and back.
 _HEAD_FRONT = """
-..hhhh..
-.hhhhhh.
+..ffff..
+.hffffh.
 .hffffh.
 .hkffkh.
 ..ffff..
 ...ff...
 """
 _HEAD_BACK = """
-..hhhh..
-.hhhhhh.
+..ffff..
+.hhffhh.
 .hhhhhh.
 .hhhhhh.
 ..hhhh..
 ...ff...
 """
+# Profile: hair at the back (left), a three-unit face with one eye in front.
 _HEAD_SIDE = """
-..hhhh..
-.hhhhhh.
-.hhffff.
-.hhkfff.
-..hfff..
+..ffff..
+.hhfff..
+.hhkff..
+.hhfff..
+..hff...
 ...ff...
 """
 _TORSO_FRONT = """
@@ -53,7 +55,19 @@ fwwwwwwf
 .kkkkkk.
 .wwwwww.
 """
-_TORSO_BACK = _TORSO_FRONT.replace("k", "w").replace("g", "w")
+_TORSO_BACK = """
+.wwwwww.
+wwwwwwww
+wwwwwwww
+wwwwwwww
+wwwwwwww
+wwwwwwww
+wwwwwwww
+fwwwwwwf
+.wwwwww.
+.kkkkkk.
+.wwwwww.
+"""
 _TORSO_SIDE = """
 ..wwww..
 ..wwkw..
@@ -80,19 +94,21 @@ _LEGS_FRONT_A = """
 .bb..bb.
 .bb..bb.
 """
+# one leg lifted mid-stride; C is B's mirror so the cycle goes A B A C
 _LEGS_FRONT_B = """
 .ww..ww.
 .ww..ww.
-ww....ww
-ww....ww
-ww....ww
-ww....ww
-ww....ww
-ww....ww
-ww....ww
-bb....bb
-bb....bb
+.ww..ww.
+.ww..ww.
+.ww..ww.
+.ww..ww.
+.ww..bb.
+.ww..bb.
+.ww.....
+.bb.....
+.bb.....
 """
+_LEGS_FRONT_C = "\n".join(r[::-1] for r in _LEGS_FRONT_B.split("\n"))
 _LEGS_SIDE_A = """
 ..wwww..
 ..wwww..
@@ -160,8 +176,9 @@ DIR_DELTA: dict[int, tuple[int, int]] = {
 
 
 def _build_frames() -> dict[str, list[pygame.Surface]]:
-    down = [_frame(_HEAD_FRONT, _TORSO_FRONT, _LEGS_FRONT_A), _frame(_HEAD_FRONT, _TORSO_FRONT, _LEGS_FRONT_B)]
-    up = [_frame(_HEAD_BACK, _TORSO_BACK, _LEGS_FRONT_A), _frame(_HEAD_BACK, _TORSO_BACK, _LEGS_FRONT_B)]
+    front_cycle = (_LEGS_FRONT_A, _LEGS_FRONT_B, _LEGS_FRONT_A, _LEGS_FRONT_C)
+    down = [_frame(_HEAD_FRONT, _TORSO_FRONT, legs) for legs in front_cycle]
+    up = [_frame(_HEAD_BACK, _TORSO_BACK, legs) for legs in front_cycle]
     right = [_frame(_HEAD_SIDE, _TORSO_SIDE, _LEGS_SIDE_A), _frame(_HEAD_SIDE, _TORSO_SIDE, _LEGS_SIDE_B)]
     return {
         "down": [_surface(f) for f in down],
@@ -259,7 +276,8 @@ class Ego:
         self.x, self.y = nx, ny
         self.anim_tick += 1
         if self.anim_tick % 4 == 0:
-            self.frame ^= 1
+            self.ensure_frames()
+            self.frame = (self.frame + 1) % len(self.frames[self.facing])
         return None
 
     def draw(self, target: pygame.Surface, pic: Picture) -> None:
@@ -267,7 +285,8 @@ class Ego:
         if not self.visible:
             return
         self.ensure_frames()
-        surf = self.frames[self.facing][self.frame if self.direction else 0]
+        cycle = self.frames[self.facing]
+        surf = cycle[self.frame % len(cycle) if self.direction else 0]
         top = self.y - surf.get_height() + 1
         raw_key = surf.get_colorkey()
         key = pygame.Color(*raw_key) if raw_key else None
