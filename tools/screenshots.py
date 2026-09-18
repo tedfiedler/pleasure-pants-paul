@@ -102,6 +102,23 @@ def main() -> int:
     cmd("dance with ginger")
     cycles(20)
     shot("disco")
+    game.new_room(21)
+    game.messages.clear()
+    game.ego.x, game.ego.y = 40, 130
+    shot("casino-street")
+    game.ego.x, game.ego.y = 80, 120
+    game.ego.set_direction(1)
+    cycles(4)
+    game.messages.clear()
+    game.ego.x, game.ego.y = 88, 112
+    shot("casino")
+    cmd("play blackjack")
+    import random as _random
+
+    game.rng = _random.Random(7)
+    cmd("bet 50", dismiss=False)
+    shot("casino-blackjack")
+    key(pygame.K_SPACE)
     game.new_room(10)
     game.messages.clear()
     game.ego.x, game.ego.y = 76, 128

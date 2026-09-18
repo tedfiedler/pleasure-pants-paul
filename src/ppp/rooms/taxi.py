@@ -23,7 +23,7 @@ from ppp.room import Room
 # word group -> (display name, fare, built room number or None)
 DESTINATIONS: dict[str, tuple[str, int, int | None]] = {
     "bar": ("Rooster's", 5, 10),
-    "casino": ("the Golden Sock Casino", 5, None),
+    "casino": ("the Golden Sock Casino", 5, 21),
     "disco": ("the Boogie Palace", 5, 19),
     "store": ("the Kwik-Snak convenience store", 5, 17),
     "chapel": ("the Chapel of Eternal Regret", 5, None),

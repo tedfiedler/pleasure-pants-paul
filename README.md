@@ -24,8 +24,8 @@ original). Type commands such as `look`, `look bar`, `talk to bartender`,
 Rooms so far: the street outside Rooster's (10), the bar (11), the alley to
 the west (12), the inside of a cab (13), the men's room (14), the back room
 behind the alley door (15), the room upstairs (16), the Kwik-Snak with its
-own street (17, 18) and the Boogie Palace with its own street (19, 20). See
-the player's guide below.
+own street (17, 18), the Boogie Palace (19, 20) and the Golden Sock Casino
+(21, 22), each with its own street. See the player's guide below.
 
 Alt-X (or Cmd-X on a Mac) skips the age quiz.
 
@@ -140,9 +140,9 @@ down.
 
 ![Inside the cab](docs/images/taxi.png)
 
-Tell the driver where to go: `store`, `disco`, `Rooster's`, `casino` or
-`chapel`. The first three are real; the casino and chapel are still behind
-a plywood fence, but the meter runs anyway. `Pay the driver`, then `get out`.
+Tell the driver where to go: `store`, `disco`, `casino`, `Rooster's` or
+`chapel`. Only the chapel is still behind a plywood fence, and the meter
+runs anyway. `Pay the driver`, then `get out`.
 Don't try it the other way round.
 
 ### The Kwik-Snak
@@ -159,6 +159,19 @@ you have to ask for out loud. Ask at the counter. Don't pocket anything; the
 sign by the register is not a joke.
 
 ![The famous purchase](docs/images/store-pricecheck.png)
+
+### The Golden Sock
+
+![Outside the Golden Sock](docs/images/casino-street.png)
+
+The casino. Slots along the left wall at five dollars a pull; a blackjack
+table in the middle that takes bets from five to a hundred (`play
+blackjack`, `bet 20`, `hit`, `stand`, `leave`); and a prize counter on the
+right with one diamond ring at two hundred and fifty dollars. You arrived
+with less than that. The tables are that way. Save first; the original
+players did.
+
+![Blackjack](docs/images/casino-blackjack.png)
 
 ### The Boogie Palace
 
@@ -207,9 +220,12 @@ before you do anything clever, and especially before you do anything stupid.
 | 3 | Inside, at Ginger's table: `give chocolates to ginger`. |
 | 2 | Then `give wine to ginger`. |
 | 5 | Then `dance with ginger`. She'll want a ring next. |
+| 1 | At the Golden Sock: win anything on the slots. |
+| 2 | Win a hand of blackjack. |
+| 5 | At the prize counter, with $250: `buy ring`. |
 
-That is 67 points of a possible 222, all reachable. The casino and the
-chapel are under construction.
+That is 75 points of a possible 222, all reachable. The chapel is under
+construction.
 </details>
 
 The screenshots are regenerated with `uv run python tools/screenshots.py`.

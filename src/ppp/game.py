@@ -46,6 +46,7 @@ class Game:
     dead: bool = False
     cycle_count: int = 0
     scored: set[str] = field(default_factory=set)
+    rng: random.Random = field(default_factory=random.Random, repr=False)
 
     def __post_init__(self) -> None:
         self.vars.setdefault("money", START_MONEY)
@@ -200,6 +201,8 @@ class Game:
             self.request = "restart"
         elif p.has("north", "south", "east", "west"):
             self.print(DIRECTION_REPLY)
+        elif p.said("money") or p.said("look", "money") or p.said("look", "money", "rol"):
+            self.print(f"You have ${self.vars.get('money', 0)}. It's not a fortune. It's barely a rumour of one.")
         elif p.said("wait"):
             self.print("Time passes. Paul does not get any younger, or any cooler.")
         elif p.said("look", "floor"):

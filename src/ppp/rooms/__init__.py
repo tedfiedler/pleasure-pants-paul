@@ -4,6 +4,8 @@ from ppp.game import Game
 from ppp.rooms.alley import Alley
 from ppp.rooms.backroom import BackRoom
 from ppp.rooms.bar import Bar
+from ppp.rooms.casino import Casino
+from ppp.rooms.casinostreet import CasinoStreet
 from ppp.rooms.disco import Disco
 from ppp.rooms.discostreet import DiscoStreet
 from ppp.rooms.mensroom import MensRoom
@@ -29,5 +31,7 @@ def register(game: Game) -> None:
         Store(),
         DiscoStreet(),
         Disco(),
+        CasinoStreet(),
+        Casino(),
     ):
         game.add_room(room)

@@ -101,7 +101,7 @@ def test_cab_ride_pay_and_exit(game: Game) -> None:
     assert game.room.number == 10  # no ride yet: he lets you go
     game.new_room(13)
     drain(game)
-    game.handle_input("take me to the casino")
+    game.handle_input("take me to the chapel")
     assert game.vars["fare"] == 5
     drain(game)
     game.handle_input("get out")
@@ -464,4 +464,96 @@ def test_ladies_room_is_fatal(game: Game) -> None:
     game.new_room(20)
     game.ego.x, game.ego.y = 110, 104
     game.handle_input("enter door")
+    assert game.dead
+
+
+def test_parser_numbers() -> None:
+    from ppp.parser import parse
+
+    p = parse("bet 20 dollars")
+    assert p.words == ["bet", "number", "money"] and p.number == 20 and p.unknown is None
+
+
+def test_cab_reaches_the_casino(game: Game) -> None:
+    game.vars["money"] = 20
+    game.new_room(13)
+    game.handle_input("casino")
+    game.handle_input("pay")
+    game.handle_input("get out")
+    assert game.room is not None and game.room.number == 21
+    drain(game)
+    game.ego.x, game.ego.y = 80, 120
+    game.ego.set_direction(1)
+    run(game, 4)
+    assert game.room.number == 22
+
+
+def test_slots_pay_and_charge(game: Game) -> None:
+    import random
+
+    game.rng = random.Random(3)
+    game.new_room(22)
+    drain(game)
+    game.handle_input("pull lever")
+    assert "left wall" in drain(game)[0]
+    game.ego.x, game.ego.y = 30, 110
+    game.vars["money"] = 100
+    for _ in range(40):
+        game.handle_input("pull the lever")
+    assert game.vars["money"] != 100
+    assert game.score in (0, 1)
+    game.vars["money"] = 2
+    game.handle_input("play slots")
+    assert "sorry" in drain(game)[-1]
+
+
+def test_blackjack_hand(game: Game) -> None:
+    from ppp.rooms.casino import Casino, hand_value
+
+    assert hand_value(["As", "Kd"]) == 21
+    assert hand_value(["As", "9d", "5c"]) == 15
+    assert hand_value(["Ks", "Qd", "2c"]) == 22
+    game.new_room(22)
+    room = game.room
+    assert isinstance(room, Casino)
+    game.ego.x, game.ego.y = 88, 110
+    game.vars["money"] = 50
+    drain(game)
+    game.handle_input("bet 10")
+    assert "Sit at the blackjack" in drain(game)[0]
+    game.handle_input("play blackjack")
+    assert room.bj is not None
+    drain(game)
+    game.handle_input("bet 500")
+    assert "Five to a hundred" in drain(game)[0]
+    game.handle_input("bet 20")
+    assert game.vars["money"] == 30
+    # rig the hand: player 20, dealer 17, then stand
+    room.bj.update({"player": ["Kd", "Qs"], "dealer": ["7h", "Kc"], "deck": ["2c", "2d"]})
+    drain(game)
+    game.handle_input("stand")
+    assert game.vars["money"] == 70 and game.score == 2
+    drain(game)
+    game.handle_input("bet 10")
+    room.bj.update({"player": ["Kd", "9s"], "dealer": ["7h", "Kc"], "deck": ["2d", "5c"]})
+    game.handle_input("hit")
+    assert game.vars["money"] == 60 and "Bust" in drain(game)[-1]
+    game.handle_input("leave")
+    assert room.bj is None
+
+
+def test_ring_costs_250(game: Game) -> None:
+    game.new_room(22)
+    game.ego.x, game.ego.y = 136, 110
+    game.vars["money"] = 100
+    game.handle_input("buy ring")
+    assert not game.has("ring")
+    game.vars["money"] = 300
+    game.handle_input("buy the ring")
+    assert game.has("ring") and game.vars["money"] == 50 and game.score == 5
+
+
+def test_stealing_chips_is_fatal(game: Game) -> None:
+    game.new_room(22)
+    game.handle_input("take chips")
     assert game.dead

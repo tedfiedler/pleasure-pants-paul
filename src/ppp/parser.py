@@ -15,6 +15,7 @@ class Parsed:
     words: list[str] = field(default_factory=list)  # group names in order
     raw: list[str] = field(default_factory=list)  # original tokens kept
     unknown: str | None = None  # first unrecognised word, if any
+    number: int | None = None  # the first numeric token, matched as the word "number"
 
     def said(self, *pattern: str) -> bool:
         """AGI-style match. `anyword` matches one word, `rol` matches the rest."""
@@ -48,6 +49,12 @@ def parse(text: str) -> Parsed:
     for tok in _token_re.findall(text.lower()):
         tok = tok.removesuffix("'s")  # rooster's -> rooster
         if tok in IGNORE:
+            continue
+        if tok.isdigit():
+            if out.number is None:
+                out.number = int(tok)
+            out.words.append("number")
+            out.raw.append(tok)
             continue
         group = LOOKUP.get(tok)
         if group is None:
