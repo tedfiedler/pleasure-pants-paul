@@ -139,3 +139,61 @@ def test_restore_revives(game: Game) -> None:
     assert game.dead
     save.apply(game, save.read(path))
     assert not game.dead and game.message is None
+
+
+def test_bar_door_leads_to_mens_room_and_back(game: Game) -> None:
+    game.new_room(11)
+    drain(game)
+    game.ego.x, game.ego.y = 144, 104
+    game.ego.set_direction(1)
+    run(game, 6)
+    assert game.room is not None and game.room.number == 14
+    game.ego.x, game.ego.y = 76, 166
+    game.ego.set_direction(5)
+    run(game, 6)
+    assert game.room.number == 11
+    assert game.ego.x == 145 and game.ego.y >= 104  # spawned at the MEN door, still walking
+
+
+def test_graffiti_cycles_and_teaches_the_password(game: Game) -> None:
+    from ppp.rooms.mensroom import GRAFFITI, PASSWORD_LINE
+
+    game.new_room(14)
+    drain(game)
+    seen: list[str] = []
+    for _ in range(len(GRAFFITI)):
+        game.handle_input("read graffiti")
+        seen.append(drain(game)[0])
+    for line in GRAFFITI:
+        assert any(line in s for s in seen)
+    assert game.flags["knows_password"] and game.score == 2
+    game.handle_input("read the wall")
+    assert GRAFFITI[0] in drain(game)[0]  # wraps around
+    game.handle_input("read graffiti")
+    game.handle_input("read graffiti")
+    game.handle_input("read graffiti")
+    assert game.score == 2  # the password only scores once
+    assert PASSWORD_LINE == 2
+
+
+def test_password_opens_the_alley_door(game: Game) -> None:
+    game.new_room(12)
+    game.ego.x, game.ego.y = 104, 112
+    game.handle_input("knock on door")
+    assert "Password" in drain(game)[0]
+    game.handle_input("say rooster sent me")
+    assert game.flags.get("backdoor_open") and game.score == 5
+    assert "Bolts clank" in drain(game)[0]
+    game.handle_input("rooster sent me")
+    assert "heard you" in drain(game)[0]
+    game.ego.x = 20
+    game.new_room(12)
+    game.ego.x = 20
+    game.handle_input("rooster sent me")
+    assert "literal" in drain(game)[0]
+
+
+def test_drinking_from_the_urinal_is_fatal(game: Game) -> None:
+    game.new_room(14)
+    game.handle_input("drink water")
+    assert game.dead

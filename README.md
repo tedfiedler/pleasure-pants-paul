@@ -22,9 +22,8 @@ original). Type commands such as `look`, `look bar`, `talk to bartender`,
 `inventory`, `score`, `quit`.
 
 Rooms so far: the street outside Rooster's (10), the bar (11), the alley to
-the west (12) and the inside of a cab (13). Paul can die: in traffic, in the
-alley if he lingers, and by kicking the dog. Death offers restore, restart
-or quit, as tradition demands.
+the west (12), the inside of a cab (13) and the men's room (14). See the
+player's guide below.
 
 Alt-X (or Cmd-X on a Mac) skips the age quiz.
 
@@ -43,6 +42,111 @@ Saved games are JSON files, twelve most recent kept, in:
 | Linux | `$XDG_DATA_HOME/PleasurePantsPaul/saves` |
 
 Set `PPP_SAVE_DIR` to override.
+
+## Player's guide
+
+![The street outside Rooster's](docs/images/street.png)
+
+You are Paul. It is late, you are single, and you are wearing the suit. The
+goal, eventually, is love, or a reasonable facsimile. For now the goal is to
+survive the block around Rooster's with your wallet and your pulse.
+
+### Controls
+
+| Key | What it does |
+|---|---|
+| Arrow keys | Walk. Press the same arrow again to stop. Diagonals on the numpad, Home/End/PgUp/PgDn. |
+| Typing + ENTER | Talk to the parser: `look`, `look at bartender`, `buy whiskey`, `give whiskey to drunk`. |
+| Any key | Dismiss a message box. |
+| ESC | Open the menu bar. Arrows move, ENTER picks, ESC closes. |
+| F1 / F2 / F3 / F4 | Help, sound on/off, score, look. |
+| F5 / F7 / F9 | Save, restore, restart. |
+| Tab | Inventory. |
+| Alt-Z (Cmd-Z) | Quit. |
+| Alt-X (Cmd-X) | Skip the age quiz. You didn't hear it from me. |
+
+Walking into a doorway enters it; walking off the edge of the screen goes to
+the next one. The parser understands verb-noun sentences and ignores filler
+words, so `pick up the wilted rose` and `get rose` are the same thing. When
+you get a response like *"I don't know the word ..."* the word isn't in the
+vocabulary; try a synonym. When Paul refuses, you're probably not standing
+close enough.
+
+### The age quiz
+
+![The age quiz](docs/images/quiz.png)
+
+Five questions about mortgages, tax forms and happy hour. Get more than two
+wrong and you're sent home. Grown-ups will be fine.
+
+### The street
+
+Rooster's is the red door under the pink neon. The alley is off to the west.
+The road is for cars; standing in the far lane for long is a short story with
+an unhappy ending. `Call a cab` and one pulls up at the curb.
+
+![A cab pulls up](docs/images/street-cab.png)
+
+### Rooster's
+
+![Inside Rooster's](docs/images/bar.png)
+
+Walk up to the bar to `talk to the bartender` and `buy whiskey` (ten dollars;
+you start with ninety-four). The gentleman in the booth would like a drink.
+The door on the right marked MEN is worth a visit.
+
+### The men's room
+
+![The men's room](docs/images/mensroom.png)
+
+`Read the graffiti`, repeatedly. Most of it is what you'd expect. One line is
+not.
+
+![Reading the wall](docs/images/mensroom-graffiti.png)
+
+### The alley
+
+![The alley](docs/images/alley.png)
+
+A dumpster worth searching, a dog worth leaving alone, and a steel door with
+a slot that wants a password. Don't stand around: someone else uses this
+alley, and he's not there to chat.
+
+### The cab
+
+![Inside the cab](docs/images/taxi.png)
+
+Tell the driver where to go: `casino`, `disco`, `store`, `chapel` or
+`Rooster's`. Most of the city is still behind a plywood fence, but the meter
+runs anyway. `Pay the driver`, then `get out`. Don't try it the other way
+round.
+
+### Dying
+
+![A Sierra death](docs/images/death.png)
+
+Paul dies easily and often. The box offers restore, restart or quit. Save
+before you do anything clever, and especially before you do anything stupid.
+
+<details>
+<summary>Walkthrough of everything scoreable so far (spoilers)</summary>
+
+| Points | How |
+|---|---|
+| 2 | In Rooster's, at the bar: `buy whiskey`. |
+| 4 | Walk to the booth: `give whiskey to drunk`. He hands over a TV remote. |
+| 2 | In the men's room: `read graffiti` until you reach the password line. |
+| 2 | In the alley: `search dumpster`, then `get rose`. |
+| 5 | In the alley, by the steel door: `rooster sent me`. |
+| 1 | On the street: `call a cab`. |
+| 1 each | In the cab: ride to the casino, disco, store or chapel. |
+| 1 | In the cab: `pay the driver`. |
+
+That is 21 points of a possible 222. The rest of the city is under
+construction.
+</details>
+
+The screenshots are regenerated with `uv run python tools/screenshots.py`.
 
 ## How faithful is it?
 

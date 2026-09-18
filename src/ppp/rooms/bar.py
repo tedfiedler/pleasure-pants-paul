@@ -22,6 +22,7 @@ from ppp.pic import Picture
 from ppp.room import Room
 
 WHISKEY_PRICE = 10
+DOOR_X = (138, 160)  # walk up into this range to enter the men's room
 
 
 class Bar(Room):
@@ -35,7 +36,7 @@ class Bar(Room):
     )
     horizon = 100
     edges = {"bottom": 10}
-    spawns = {"default": (76, 150), 10: (76, 156)}
+    spawns = {"default": (76, 150), 10: (76, 156), 14: (145, 104)}
     looks = {
         "bar": "A scarred wooden bar, sticky in places you don't want to think about. "
         "Behind it: bottles, a mirror, and the bartender.",
@@ -44,7 +45,7 @@ class Bar(Room):
         "drunk": "A gentleman of the old school, if the old school was a bus station. He is "
         "nursing an empty glass and mumbling about his 'shows'. His coat pocket bulges.",
         "jukebox": "A jukebox with a cracked chrome front. Every song on it is by someone's cousin.",
-        "door": "A door at the back marked MEN. It stands ajar, breathing.",
+        "door": "A door on the right marked MEN. It stands ajar, breathing. Walk up to it to go in.",
         "stool": "Bar stools, bolted to the floor, which tells you about the clientele.",
         "whiskey": "A shot of house whiskey. It's the colour of old pennies and smells like a campfire in a tyre yard.",
         "money": "You have some cash in your wallet. Less than you'd like.",
@@ -66,20 +67,22 @@ class Bar(Room):
         _draw_person(pic, 62, 46, suit=WHITE, skin=LRED, hair=BLACK, apron=True)
         # the bar counter keeps its default band priority, so Paul (always
         # below it, in a higher band) is drawn in front of it
-        pic.rect(16, 68, 108, 14, BROWN)
-        pic.rect(16, 66, 108, 3, LGREY)
-        pic.rect(16, 66, 108, 16, None, 0)  # cannot walk through the bar
+        pic.rect(16, 68, 84, 14, BROWN)
+        pic.rect(16, 66, 84, 3, LGREY)
+        pic.rect(16, 66, 84, 16, None, 0)  # cannot walk through the bar
         # jukebox left, booth right
         pic.rect(2, 44, 16, 56, DGREY, 0)
         pic.rect(4, 46, 12, 24, CYAN)
         pic.rect(4, 72, 12, 26, LGREY)
-        pic.rect(128, 70, 30, 24, RED, 0)  # booth seat
-        pic.rect(124, 92, 34, 6, BROWN, 0)  # booth table
-        _draw_person(pic, 138, 74, suit=DGREY, skin=LRED, hair=LGREY)
-        # men's room door
-        pic.rect(130, 10, 20, 40, BROWN, 0)
-        pic.rect(132, 12, 16, 36, DGREY)
-        pic.rect(134, 20, 12, 6, WHITE)
+        pic.rect(104, 70, 30, 24, RED, 0)  # booth seat
+        pic.rect(100, 92, 34, 6, BROWN, 0)  # booth table
+        _draw_person(pic, 114, 74, suit=DGREY, skin=LRED, hair=LGREY)
+        # men's room door, at floor level so Paul can walk in
+        pic.rect(138, 44, 22, 56, BROWN)
+        pic.rect(140, 46, 18, 54, DGREY)
+        pic.rect(142, 54, 14, 6, WHITE)  # the MEN sign
+        pic.pixel(155, 78, YELLOW)
+        pic.rect(DOOR_X[0], 100, DOOR_X[1] - DOOR_X[0], 2, None, 2)  # threshold signal
         # walls: nothing above the bar line is walkable
         pic.walls(100)
         pic.line([(0, 100), (PIC_W - 1, 100)], BLACK)
@@ -95,9 +98,14 @@ class Bar(Room):
     def _near(self, game: Game, x0: int, x1: int) -> bool:
         return x0 <= game.ego.centre_x <= x1 and game.ego.y <= 112
 
+    def update(self, game: Game) -> None:
+        ego = game.ego
+        if ego.direction == 1 and DOOR_X[0] <= ego.centre_x <= DOOR_X[1] and ego.y <= self.horizon + 1:
+            game.new_room(14)
+
     def said(self, game: Game, p: Parsed) -> bool:
         near_bar = self._near(game, 16, 124)
-        near_drunk = self._near(game, 116, 160)
+        near_drunk = self._near(game, 92, 140)
 
         if p.said("talk", "bartender") or p.said("talk", "bartender", "rol"):
             if not near_bar:
@@ -135,8 +143,13 @@ class Bar(Room):
             game.print(self.looks["drunk"])
         elif p.said("play", "jukebox") or p.said("push", "jukebox") or p.said("use", "jukebox"):
             game.print("You feed it a quarter. It plays a song about a truck. The drunk weeps.")
-        elif p.said("open", "door") or p.said("enter", "door") or p.said("enter", "bathroom"):
-            game.print("The men's room. It's coming in a future release, along with the smell.")
+        elif (
+            p.said("open", "door")
+            or p.said("enter", "door")
+            or p.said("enter", "bathroom")
+            or p.said("use", "bathroom")
+        ):
+            game.print("Walk up to the door marked MEN. It's on the right, past the booth. Follow the smell.")
         elif p.said("sit", "rol") or p.said("sit"):
             game.print("You perch on a stool. It wobbles. So do you.")
         elif p.said("look", "money") or p.said("look", "wallet") or p.said("money"):

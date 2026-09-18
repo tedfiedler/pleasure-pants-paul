@@ -136,15 +136,23 @@ class Alley(Room):
                 "The dog was not asleep. The dog was waiting. It has your ankle, then your "
                 "calf, then your attention, and then it has all of you. Paul is dog food."
             )
+        elif p.has("rooster") and p.has("sent"):
+            self._password(game)
         elif p.said("knock", "door") or p.said("push", "door"):
-            game.print(
-                'The slot slides open. Two eyes. "Password?" You offer your best smile. '
-                "The slot slides shut. Evidently that's not the password."
-            )
+            if game.flags.get("backdoor_open"):
+                game.print('The slot slides open. "You again. Still renovating. Go drink something."')
+            else:
+                game.print(
+                    'The slot slides open. Two eyes. "Password?" You offer your best smile. '
+                    "The slot slides shut. Evidently that's not the password."
+                )
         elif p.said("open", "door") or p.said("enter", "door") or p.said("pull", "door"):
             game.print("No handle. Not for you, anyway. There's a slot; maybe try knocking.")
         elif p.said("talk", "rol") and p.has("password"):
-            game.print("You'd need to know the password first. Someone around here must have written it down.")
+            if game.flags.get("knows_password"):
+                game.print("You know it. Say it. Out loud, to the door, like a person with a plan.")
+            else:
+                game.print("You'd need to know the password first. Someone around here must have written it down.")
         elif p.said("drink", "puddle"):
             game.print("You consider it, which says a great deal. You do not, which says slightly less.")
         elif p.said("smell"):
@@ -154,6 +162,22 @@ class Alley(Room):
         else:
             return False
         return True
+
+    def _password(self, game: Game) -> None:
+        if not (86 <= game.ego.centre_x <= 130 and game.ego.y <= 120):
+            game.print("Say it to the door. Doors are very literal.")
+            return
+        if game.flags.get("backdoor_open"):
+            game.print('"I heard you the first time." The slot stays shut.')
+            return
+        game.flags["backdoor_open"] = True
+        game.award("backdoor", 5)
+        game.print(
+            'The slot slides open. "Rooster sent you? Why didn\'t you say so." Bolts clank. '
+            "The door opens on a stairwell, a bare bulb, and a large man with a mop. "
+            '"Back room\'s being renovated. Come back next week." The door shuts, gently, '
+            "which is the nicest thing anyone has done for you all night."
+        )
 
     def _search(self, game: Game) -> None:
         if game.has("rose"):
