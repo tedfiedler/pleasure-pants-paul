@@ -40,6 +40,21 @@ def test_street_to_alley_and_back(game: Game) -> None:
     assert game.room.number == 10
 
 
+def test_leaving_alley_above_the_curb_does_not_strand_paul(game: Game) -> None:
+    # the alley's floor reaches higher than the street's, so Paul's line of
+    # motion can come out inside the building face
+    game.new_room(12)
+    game.ego.x, game.ego.y = 140, 106
+    game.ego.set_direction(3)
+    while game.room is not None and game.room.number == 12:
+        run(game, 1)
+    assert game.room is not None and game.room.number == 10
+    assert game.ego.y >= game.room.horizon
+    x = game.ego.x
+    run(game, 5)
+    assert game.ego.x > x
+
+
 def test_alley_rose(game: Game) -> None:
     game.new_room(12)
     game.handle_input("get rose")

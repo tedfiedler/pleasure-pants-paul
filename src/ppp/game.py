@@ -211,6 +211,22 @@ class Game:
             self.ego.y = max(self.room.horizon, 40) if self.room else 40
         elif edge == "top":
             self.ego.y = PIC_H - 2
+        self._unstick(edge)
+
+    def _unstick(self, edge: str) -> None:
+        """The new room's walls may cover Paul's line of motion; slide him along the edge to the nearest open spot."""
+        if self.room is None or self.pic is None:
+            return
+        ego = self.ego
+        sideways = edge in ("left", "right")
+        for d in range(PIC_H):
+            for off in (d, -d):
+                x, y = (ego.x, ego.y + off) if sideways else (ego.x + off, ego.y)
+                if not (0 <= x <= PIC_W - ego.width and 0 <= y < PIC_H):
+                    continue
+                if not ego.blocked(self.pic, x, y, self.room.horizon):
+                    ego.x, ego.y = x, y
+                    return
 
     # -- per-cycle --------------------------------------------------------
 

@@ -227,7 +227,7 @@ class Ego:
         self.direction = 0
         self.frame = 0
 
-    def _blocked(self, pic: Picture, nx: int, ny: int, horizon: int) -> bool:
+    def blocked(self, pic: Picture, nx: int, ny: int, horizon: int) -> bool:
         if ny < horizon:
             return True
         # feet strip: bottom row of the sprite across the body width;
@@ -251,11 +251,11 @@ class Ego:
             return "bottom"
         if ny < horizon and dy < 0 and horizon <= 0:
             return "top"
-        if self._blocked(pic, nx, ny, horizon):
+        if self.blocked(pic, nx, ny, horizon):
             # try sliding along one axis
-            if dx and not self._blocked(pic, self.x + dx * self.step, self.y, horizon):
+            if dx and not self.blocked(pic, self.x + dx * self.step, self.y, horizon):
                 nx, ny = self.x + dx * self.step, self.y
-            elif dy and not self._blocked(pic, self.x, self.y + dy * self.step, horizon):
+            elif dy and not self.blocked(pic, self.x, self.y + dy * self.step, horizon):
                 nx, ny = self.x, self.y + dy * self.step
             else:
                 return None
