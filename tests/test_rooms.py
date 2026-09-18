@@ -527,7 +527,7 @@ def test_blackjack_hand(game: Game) -> None:
     game.handle_input("bet 500")
     assert "Five to a hundred" in drain(game)[0]
     game.handle_input("bet 20")
-    assert game.vars["money"] == 30
+    assert game.vars["money"] == 50  # the stake only moves when the hand settles
     # rig the hand: player 20, dealer 17, then stand
     room.bj.update({"player": ["Kd", "Qs"], "dealer": ["7h", "Kc"], "deck": ["2c", "2d"]})
     drain(game)
@@ -538,6 +538,30 @@ def test_blackjack_hand(game: Game) -> None:
     room.bj.update({"player": ["Kd", "9s"], "dealer": ["7h", "Kc"], "deck": ["2d", "5c"]})
     game.handle_input("hit")
     assert game.vars["money"] == 60 and "Bust" in drain(game)[-1]
+    # a natural against a dealer 21 is a push; against anything else pays 3:2 rounded up
+    game.handle_input("bet 15")
+    room.bj.update({"player": ["As", "Kd"], "dealer": ["Ah", "Qc"], "deck": ["2c"]})
+    room._settle(game, natural=True)
+    assert game.vars["money"] == 60 and "push" in drain(game)[-1].lower()
+    game.handle_input("bet 15")
+    room.bj.update({"player": ["As", "Kd"], "dealer": ["7h", "6c"], "deck": ["2c"]})
+    room._settle(game, natural=True)
+    assert game.vars["money"] == 83 and "7h 6c" in drain(game)[-1]  # dealer did not draw
+    # walking out mid-hand costs nothing
+    game.handle_input("bet 50")
+    game.ego.x, game.ego.y = 80, 166
+    game.ego.set_direction(5)
+    run(game, 4)
+    assert game.room is not None and game.room.number == 21 and game.vars["money"] == 83
+    game.new_room(22)
+    assert room.bj is None
+    game.ego.x, game.ego.y = 88, 110
+    game.handle_input("play blackjack")
+    game.handle_input("bet 10")
+    drain(game)
+    game.handle_input("leave")
+    assert "Finish the hand" in drain(game)[0]
+    game.handle_input("stand")
     game.handle_input("leave")
     assert room.bj is None
 
@@ -553,7 +577,42 @@ def test_ring_costs_250(game: Game) -> None:
     assert game.has("ring") and game.vars["money"] == 50 and game.score == 5
 
 
-def test_stealing_chips_is_fatal(game: Game) -> None:
+def test_stealing_chips_is_fatal_only_at_the_table(game: Game) -> None:
     game.new_room(22)
+    game.ego.x, game.ego.y = 30, 130
+    game.handle_input("take winnings")
+    assert not game.dead and "in your pocket" in drain(game)[-1]
+    game.handle_input("cash out")
+    assert not game.dead and "$" in drain(game)[-1]
+    game.ego.x, game.ego.y = 88, 110
     game.handle_input("take chips")
     assert game.dead
+
+
+def test_hit_and_cash_still_reach_the_rooms(game: Game) -> None:
+    game.new_room(15)
+    game.handle_input("hit brick")
+    assert game.dead
+    game.dead = False
+    game.messages.clear()
+    game.new_room(13)
+    drain(game)
+    game.handle_input("store")
+    drain(game)
+    game.handle_input("give cash to driver")
+    assert game.vars["fare"] == 0
+    game.new_room(18)
+    drain(game)
+    game.handle_input("look at the chips")
+    assert "flavour" in drain(game)[0]
+
+
+def test_typed_entry_at_open_doors(game: Game) -> None:
+    game.new_room(21)
+    game.ego.x, game.ego.y = 80, 120
+    game.handle_input("enter casino")
+    assert game.room is not None and game.room.number == 22
+    game.new_room(17)
+    game.ego.x, game.ego.y = 80, 120
+    game.handle_input("open door")
+    assert game.room.number == 18

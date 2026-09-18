@@ -219,7 +219,7 @@ class BackRoom(Room):
             self._try_stairs(game)
 
     def said(self, game: Game, p: Parsed) -> bool:
-        near_stairs = STAIRS_X[0] - 10 <= game.ego.centre_x <= STAIRS_X[1] and game.ego.y <= 112
+        near_stairs = self.near(game, STAIRS_X[0] - 10, STAIRS_X[1], 112)
         if (
             p.said("use", "remote")
             or p.said("push", "remote")

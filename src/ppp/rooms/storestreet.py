@@ -126,7 +126,7 @@ class StoreStreet(Room):
         self.curb.update(game)
 
     def said(self, game: Game, p: Parsed) -> bool:
-        near_phone = 8 <= game.ego.centre_x <= 36 and game.ego.y <= 130
+        near_phone = self.near(game, 8, 36, 130)
         if p.has("phone") and p.verb in ("use", "get", "call", "push", "talk", "open"):
             if not near_phone:
                 game.print("Walk over to the phone. It's on the left, by the corner, and it's not cordless.")
@@ -142,6 +142,8 @@ class StoreStreet(Room):
         elif p.said("open", "door") or p.said("enter", "door") or p.said("enter", "store") or p.said("enter"):
             if self.curb.near(game):
                 game.new_room(13)
+            elif self.near(game, DOOR_X[0], DOOR_X[1], 130):
+                game.new_room(18)
             else:
                 game.print("Walk up to the glass doors. They slide open for anyone; it's a low bar, and you clear it.")
         elif p.said("get", "newspaper") or p.said("look", "newspaper", "rol") or p.said("open", "newspaper"):

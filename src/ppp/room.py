@@ -28,6 +28,11 @@ class Room:
     def draw(self, pic: Picture) -> None:
         raise NotImplementedError
 
+    @staticmethod
+    def near(game: Game, x0: int, x1: int, max_y: int = 116) -> bool:
+        """Is Paul within an x range and no lower than max_y? The standard 'close enough' test."""
+        return x0 <= game.ego.centre_x <= x1 and game.ego.y <= max_y
+
     def enter(self, game: Game, from_room: int | None) -> None:
         """Called after the picture is drawn. Position Paul here."""
         x, y = self.spawns.get(from_room if from_room is not None else "default", self.spawns["default"])

@@ -96,17 +96,14 @@ class Bar(Room):
                 "The door swings shut behind you. Heads do not turn. Nobody here has turned their head since 1979."
             )
 
-    def _near(self, game: Game, x0: int, x1: int) -> bool:
-        return x0 <= game.ego.centre_x <= x1 and game.ego.y <= 112
-
     def update(self, game: Game) -> None:
         ego = game.ego
         if ego.direction == 1 and DOOR_X[0] <= ego.centre_x <= DOOR_X[1] and ego.y <= self.horizon + 1:
             game.new_room(14)
 
     def said(self, game: Game, p: Parsed) -> bool:
-        near_bar = self._near(game, 16, 124)
-        near_drunk = self._near(game, 92, 140)
+        near_bar = self.near(game, 16, 124, 112)
+        near_drunk = self.near(game, 92, 140, 112)
 
         if p.said("talk", "bartender") or p.said("talk", "bartender", "rol"):
             if not near_bar:

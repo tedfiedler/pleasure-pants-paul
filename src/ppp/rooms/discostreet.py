@@ -113,7 +113,7 @@ class DiscoStreet(Room):
             )
 
     def _at_door(self, game: Game) -> bool:
-        return DOOR_X[0] <= game.ego.centre_x <= DOOR_X[1] and game.ego.y <= 130
+        return self.near(game, DOOR_X[0], DOOR_X[1], 130)
 
     def update(self, game: Game) -> None:
         ego = game.ego
@@ -179,7 +179,7 @@ class DiscoStreet(Room):
     def _bribe(self, game: Game) -> None:
         if not game.has("magazine"):
             game.print("You don't have a magazine. The doorman looks, briefly, disappointed in you.")
-        elif not (80 <= game.ego.centre_x <= 120 and game.ego.y <= 130):
+        elif not self.near(game, 80, 120, 130):
             game.print("Walk up to the doorman. Discreetly. This is a discreet kind of transaction.")
         elif game.flags.get("disco_admitted"):
             game.print("He's already got what he wanted. Don't push it; he's a page-turner.")

@@ -43,6 +43,7 @@ class Store(Room):
         "bar": "A counter with a register, a jar of pickled something, a rack of lighters, "
         "and, behind the clerk, the discreet little boxes that people cross town for.",
         "shelf": "Chips, jerky, a pyramid of canned meat, and a cake that has been on sale since the moon landing.",
+        "chip": "Chips in every flavour the state allows and two it doesn't. Not for sale to you; you have a list.",
         "cooler": "A humming cooler with soda on the top shelf and, on the bottom, "
         "bottles of wine with screw tops and ambitions.",
         "wine": "A bottle of Chateau Kwik, red, screw top, eight dollars. It has notes of "
@@ -115,7 +116,7 @@ class Store(Room):
             game.print('A bell jingles. "Help you?" says the clerk, in the tone of a man hoping not to.')
 
     def _near_counter(self, game: Game) -> bool:
-        return 36 <= game.ego.centre_x <= 128 and game.ego.y <= 116
+        return self.near(game, 36, 128)
 
     def said(self, game: Game, p: Parsed) -> bool:
         item = next((n for n in PRICES if p.has(n)), None)

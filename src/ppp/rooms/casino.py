@@ -153,14 +153,13 @@ class Casino(Room):
                 "which is a skill. Somewhere a slot machine pays out for someone else."
             )
 
-    def _near(self, game: Game, x0: int, x1: int) -> bool:
-        return x0 <= game.ego.centre_x <= x1 and game.ego.y <= 116
-
     # -- dispatch ------------------------------------------------------------------
 
     def said(self, game: Game, p: Parsed) -> bool:
         if self.bj is not None and self._blackjack_said(game, p):
             return True
+        money = game.vars.get("money", 0)
+        at_table = self.near(game, 56, 120)
         if p.has("slot") and p.verb in ("play", "use", "pull", "push", "enter") or p.said("pull"):
             self._slots(game)
         elif (
@@ -176,12 +175,14 @@ class Casino(Room):
             self._buy_ring(game)
         elif p.said("buy", "rol") or p.said("buy"):
             game.print('"The ring, or nothing," says the prize lady. "The clock radio\'s a display model. So am I."')
-        elif p.has("chip") and p.verb in ("get", "steal") or p.said("get", "money") or p.said("steal", "rol"):
+        elif p.has("steal") or (p.has("chip") and p.verb == "get" and at_table):
             game.die(
                 "You reach for the chips. A hand the size of a dinner plate lands on your "
                 "shoulder. The pit boss walks you to a small room with no windows. Paul "
                 "is later found to have left town, in the sense that matters."
             )
+        elif p.has("cashout") or (p.has("chip", "money") and p.verb in ("get", "cashout", "money")):
+            game.print(f"Your winnings, such as they are, are already in your pocket. You have ${money}.")
         elif p.said("talk", "dealer") or p.said("talk", "dealer", "rol"):
             game.print('"Place your bets," says the dealer, to no one, to you, to the room.')
         elif p.said("talk", "clerk") or p.said("talk", "clerk", "rol") or p.said("talk"):
@@ -193,8 +194,6 @@ class Casino(Room):
             )
         elif p.has("elevator") and p.verb in ("open", "enter", "use", "push", "call"):
             game.print("No button, only a keyhole. Whoever lives up there doesn't want visitors. Yet.")
-        elif p.said("look", "slot", "rol") or p.said("look", "blackjack", "rol"):
-            game.print(self.looks["slot"] if p.has("slot") else self.looks["blackjack"])
         elif p.said("smell"):
             game.print("Cigars, carpet shampoo, and the sweet cologne of a man who just won and won't again.")
         elif p.said("listen"):
@@ -206,7 +205,7 @@ class Casino(Room):
     # -- slots ---------------------------------------------------------------------
 
     def _slots(self, game: Game) -> None:
-        if not self._near(game, 4, 66):
+        if not self.near(game, 4, 66):
             game.print("The slots are along the left wall. Walk over; they don't come to you, though they'd like to.")
             return
         money = game.vars.get("money", 0)
@@ -238,7 +237,7 @@ class Casino(Room):
     # -- blackjack -----------------------------------------------------------------
 
     def _blackjack_start(self, game: Game) -> None:
-        if not self._near(game, 56, 120):
+        if not self.near(game, 56, 120):
             game.print("The blackjack table is in the middle of the floor. Walk up to it and sit like you belong.")
             return
         if self.bj is not None:
@@ -269,7 +268,6 @@ class Casino(Room):
         if amount > money:
             game.print(f"\"You've got ${money}.\" The dealer doesn't need to say the rest.")
             return
-        game.vars["money"] = money - amount
         deck = self._deck(game)
         player = [deck.pop(), deck.pop()]
         dealer = [deck.pop(), deck.pop()]
@@ -282,7 +280,7 @@ class Casino(Room):
     def _blackjack_said(self, game: Game, p: Parsed) -> bool:
         assert self.bj is not None
         in_hand = bool(self.bj["player"])
-        if p.said("hit") or p.said("hit", "self"):
+        if p.said("push") or p.said("push", "self") or p.said("draw") or p.said("draw", "rol"):
             if not in_hand:
                 game.print("Bet first. BET 20, say. Then we'll talk about hitting.")
                 return True
@@ -311,31 +309,37 @@ class Casino(Room):
         return False
 
     def _settle(self, game: Game, natural: bool = False, bust: bool = False) -> None:
+        """Resolve the hand. The stake was only checked when bet, so it moves here, once."""
         assert self.bj is not None
         bet: int = self.bj["bet"]  # type: ignore[assignment]
         player: list[str] = self.bj["player"]  # type: ignore[assignment]
         dealer: list[str] = self.bj["dealer"]  # type: ignore[assignment]
         deck: list[str] = self.bj["deck"]  # type: ignore[assignment]
         if bust:
+            game.vars["money"] -= bet
             outcome = f"You: {show(player)}\n\nBust. The dealer sweeps ${bet} away without a flicker."
+        elif natural:
+            head = f"You: {show(player)}\nDealer: {show(dealer)}\n\n"
+            if hand_value(dealer) == 21:
+                outcome = head + "Blackjack, and so does the dealer. A push. The universe shrugs."
+            else:
+                win = (bet * 3 + 1) // 2
+                game.vars["money"] += win
+                game.award("blackjack_win", 2)
+                outcome = head + f"Blackjack! Paid three to two: ${win} on top of your stake."
         else:
             while hand_value(dealer) < 17:
                 dealer.append(deck.pop())
             pv, dv = hand_value(player), hand_value(dealer)
             head = f"You: {show(player)}\nDealer: {show(dealer)}\n\n"
-            if natural:
-                win = bet + bet * 3 // 2
-                game.vars["money"] += win
-                game.award("blackjack_win", 2)
-                outcome = head + f"Blackjack! Paid three to two: ${win}."
-            elif dv > 21 or pv > dv:
-                game.vars["money"] += bet * 2
-                game.award("blackjack_win", 2)
-                outcome = head + ("Dealer busts. " if dv > 21 else "You win. ") + f"${bet * 2} slides your way."
-            elif pv == dv:
+            if dv > 21 or pv > dv:
                 game.vars["money"] += bet
-                outcome = head + "Push. Your money comes back, unimpressed."
+                game.award("blackjack_win", 2)
+                outcome = head + ("Dealer busts. " if dv > 21 else "You win. ") + f"${bet} slides your way."
+            elif pv == dv:
+                outcome = head + "Push. Your money stays where it was, unimpressed."
             else:
+                game.vars["money"] -= bet
                 outcome = head + f"Dealer wins. ${bet} goes home with the house."
         self.bj.update({"bet": 0, "player": [], "dealer": [], "deck": []})
         game.print(f"{outcome} You have ${game.vars['money']}.\n\nBET again, or LEAVE.")
@@ -343,7 +347,7 @@ class Casino(Room):
     # -- the ring ------------------------------------------------------------------
 
     def _buy_ring(self, game: Game) -> None:
-        if not self._near(game, 116, 160):
+        if not self.near(game, 116, 160):
             game.print("The prize counter is on the right. Walk over; the lady won't shout prices.")
             return
         if game.has("ring"):

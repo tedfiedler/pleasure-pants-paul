@@ -155,10 +155,10 @@ class Upstairs(Room):
             )
 
     def _near_dolores(self, game: Game) -> bool:
-        return 84 <= game.ego.centre_x <= 132 and game.ego.y <= 116
+        return self.near(game, 84, 132)
 
     def _near_stand(self, game: Game) -> bool:
-        return 56 <= game.ego.centre_x <= 96 and game.ego.y <= 116
+        return self.near(game, 56, 96)
 
     def said(self, game: Game, p: Parsed) -> bool:
         done = bool(game.flags.get("dolores_done"))

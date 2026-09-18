@@ -113,6 +113,8 @@ class CasinoStreet(Room):
         elif p.said("open", "door") or p.said("enter", "door") or p.said("enter", "casino") or p.said("enter"):
             if self.curb.near(game):
                 game.new_room(13)
+            elif self.near(game, DOOR_X[0], DOOR_X[1], 130):
+                game.new_room(22)
             else:
                 game.print("Walk up to the doors. They're open. They are always open. That's the trick.")
         elif p.said("smell"):

@@ -85,7 +85,7 @@ class App:
     # -- state transitions ------------------------------------------------
 
     def start_quiz(self) -> None:
-        self.quiz.start()
+        self.quiz.start(self.game.rng)
         self.state = State.QUIZ
 
     def start_game(self) -> None:

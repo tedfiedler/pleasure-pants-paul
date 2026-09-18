@@ -170,7 +170,7 @@ class Game:
         if p.unknown is not None:
             self.print(f'I don\'t know the word "{p.unknown}".')
             return
-        self.print(random.choice(DUMB_REPLIES))
+        self.print(self.rng.choice(DUMB_REPLIES))
 
     def _global(self, p: Parsed) -> bool:
         assert self.room is not None
