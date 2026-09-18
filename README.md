@@ -21,12 +21,13 @@ original). Type commands such as `look`, `look bar`, `talk to bartender`,
 `buy whiskey`, `give whiskey to drunk`, `call a cab`, `search dumpster`,
 `inventory`, `score`, `quit`.
 
-Rooms so far: the street outside Rooster's (10), the bar (11), the alley to
+The game is playable start to finish. Rooms: the street outside Rooster's (10), the bar (11), the alley to
 the west (12), the inside of a cab (13), the men's room (14), the back room
 behind the alley door (15), the room upstairs (16), the Kwik-Snak with its
 own street (17, 18), the Boogie Palace (19, 20), the Golden Sock Casino
 (21, 22) and the Chapel of Eternal Regret (23, 24), each with its own
-street, and the casino penthouse (25). See the player's guide below.
+street, the casino penthouse (25), executive floor (26), lounge (27) and
+roof pool (28), where the game ends. See the player's guide below.
 
 Alt-X (or Cmd-X on a Mac) skips the age quiz.
 
@@ -196,6 +197,29 @@ options are limited and mostly involve your feet.
 
 ![After](docs/images/penthouse-tied.png)
 
+### The second act
+
+![The lounge](docs/images/lounge.png)
+
+Broke, married, and free, Paul starts over with ten dollars and the
+casino. The lounge is finally letting people in: `sit` through the act.
+The STAFF ONLY stairs go up to the executive floor.
+
+![The executive floor](docs/images/execfloor.png)
+
+Hope, at reception, is married and means it. She has not had a coffee in
+six hours. The coffee machine has a dent. The apples on her desk are for
+the look of the thing, until they aren't. The glass door on the left is
+for pass holders.
+
+![The roof](docs/images/roof.png)
+
+The roof pool is closed for the season; the hot tub isn't. Dawn is in it,
+and she has had everything tonight except something honest and simple.
+Bring her one, and get in.
+
+![The end](docs/images/ending.png)
+
 ### The Boogie Palace
 
 ![Outside the Boogie Palace](docs/images/disco-street.png)
@@ -250,10 +274,15 @@ before you do anything clever, and especially before you do anything stupid.
 | 1 | Afterwards, by the rope on the left: `pull rope`. |
 | 10 | In the penthouse: `kiss ginger`. This costs everything you're carrying. |
 | 5 | Tied to the bed: `kick phone`, then wait for housekeeping. |
-| 1 | Once free: `read note`. |
+| 1 | Once free: `read note`. There's ten dollars in it. |
+| 3 | In the casino lounge, now open: `sit` through the whole act. |
+| 5 | On the executive floor: `get coffee` from the machine, `give coffee to hope`. |
+| 2 | Then `get apple` from her bowl. |
+| 10 | On the roof, with the pass: `give apple to dawn`. |
+| 25 | `Get in the tub`. The end. |
 
-That is 107 points of a possible 222, all reachable. After the penthouse
-Paul is free, married, and broke, which is where the second half begins.
+That is 152 points of a possible 222, all reachable, and the game can be
+finished. The remaining seventy are for the rooms and jokes still to come.
 </details>
 
 The screenshots are regenerated with `uv run python tools/screenshots.py`.

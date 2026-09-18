@@ -746,3 +746,105 @@ def test_balcony_is_fatal(game: Game) -> None:
     game.new_room(25)
     game.handle_input("open the balcony door")
     assert game.dead
+
+
+def after_honeymoon(game: Game) -> Game:
+    game.flags["honeymoon_done"] = True
+    game.flags["freed"] = True
+    game.vars["money"] = 10
+    return game
+
+
+def test_casino_stairs_and_lounge_doors(game: Game) -> None:
+    game.new_room(22)
+    game.ego.x, game.ego.y = 18, 110
+    drain(game)
+    game.handle_input("enter lounge")
+    assert game.room is not None and game.room.number == 22 and "sold out" in drain(game)[0]
+    after_honeymoon(game)
+    game.handle_input("enter lounge")
+    assert game.room.number == 27
+    game.new_room(22)
+    game.ego.x, game.ego.y = 110, 110
+    game.handle_input("climb stairs")
+    assert game.room.number == 26
+
+
+def test_lounge_act_scores_once(game: Game) -> None:
+    from ppp.rooms.lounge import JOKES
+
+    after_honeymoon(game)
+    game.new_room(27)
+    drain(game)
+    for _ in range(len(JOKES)):
+        game.handle_input("sit")
+    assert game.score == 3
+    game.handle_input("sit")
+    assert game.score == 3 and "finished" in drain(game)[-1]
+    game.handle_input("heckle")
+    assert "mop" in drain(game)[0]
+
+
+def test_hope_trades_the_pass_for_coffee(game: Game) -> None:
+    game.new_room(26)
+    drain(game)
+    game.ego.x, game.ego.y = 80, 112
+    game.handle_input("kiss hope")
+    assert "Married" in drain(game)[0]
+    game.handle_input("get apple")
+    assert "look of the thing" in drain(game)[0] and not game.has("apple")
+    game.ego.x = 144
+    game.handle_input("get coffee")
+    assert game.has("coffee")
+    game.ego.x = 80
+    game.handle_input("give coffee to hope")
+    assert not game.has("coffee") and not game.has("pass")  # before the honeymoon she just drinks it
+    after_honeymoon(game)
+    game.ego.x = 144
+    game.handle_input("get coffee")
+    game.ego.x = 80
+    game.handle_input("give coffee to hope")
+    assert game.has("pass") and game.score == 5
+    game.handle_input("take an apple")
+    assert game.has("apple") and game.score == 7
+    game.ego.x = 16
+    game.handle_input("open door")
+    assert game.room is not None and game.room.number == 28
+
+
+def test_pool_door_needs_the_pass(game: Game) -> None:
+    game.new_room(26)
+    game.ego.x, game.ego.y = 16, 112
+    drain(game)
+    game.handle_input("open the door")
+    assert game.room is not None and game.room.number == 26 and "Locked" in drain(game)[0]
+
+
+def test_roof_ending(game: Game) -> None:
+    from ppp.rooms.roof import Roof
+
+    game.flags["pool_pass"] = True
+    game.new_room(28)
+    room = game.room
+    assert isinstance(room, Roof) and room.objects(game) and room.underlays(game)
+    drain(game)
+    game.ego.x, game.ego.y = 110, 136
+    game.handle_input("get in the tub")
+    assert "Private party" in drain(game)[0]
+    game.handle_input("talk to dawn")
+    assert "honest" in drain(game)[0].lower()
+    game.give("apple")
+    game.handle_input("give the apple to dawn")
+    assert game.flags["dawn_apple"] and game.score == 10
+    drain(game)
+    game.handle_input("enter tub")
+    assert game.flags["won"] and game.score == 35 and not game.ego.visible
+    assert len(drain(game)) == 2
+    assert not room.objects(game)
+
+
+def test_parapet_is_fatal(game: Game) -> None:
+    game.flags["pool_pass"] = True
+    game.new_room(28)
+    game.handle_input("climb the rail")
+    assert game.dead

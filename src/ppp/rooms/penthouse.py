@@ -186,10 +186,13 @@ class Penthouse(Room):
                 )
         elif p.said("look", "note") or p.said("look", "note", "rol") or p.said("get", "note"):
             if game.flags.get("freed"):
+                if "note" not in game.scored:
+                    game.vars["money"] = game.vars.get("money", 0) + 10
                 game.award("note", 1)
                 game.print(
                     "The note, in lipstick on hotel stationery: \"Sugar. It was fun. The ring's real; "
-                    "the rest wasn't. Don't call. G. P.S. I took the key so you'd take the stairs.\""
+                    "the rest wasn't. Don't call. G. P.S. I took the key so you'd take the stairs. "
+                    "P.P.S. Ten bucks for a cab. A girl isn't a monster.\" A ten is folded inside."
                 )
             elif game.flags.get("honeymoon_done"):
                 game.print("There's a note on the nightstand. You'll read it when your hands are free.")

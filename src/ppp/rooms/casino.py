@@ -70,7 +70,7 @@ class Casino(Room):
     )
     horizon = 100
     edges = {"bottom": 21}
-    spawns = {"default": (80, 150), 21: (80, 156), 25: (46, 108)}
+    spawns = {"default": (80, 150), 21: (80, 156), 25: (46, 108), 26: (110, 108), 27: (18, 108)}
     looks = {
         "slot": "Three slot machines, chrome and neon, each with a lever like a "
         "question. A pull costs five dollars. Try PULL LEVER.",
@@ -135,11 +135,15 @@ class Casino(Room):
         pic.pixel(148, 71, YELLOW)
         pic.rect(122, 82, 32, 16, BLACK)
         draw_person(pic, 134, 34, suit=YELLOW, skin=LRED, hair=BLACK)
-        # lounge door and elevator, back wall
+        # lounge door, elevator and staff stairs along the back wall
         pic.rect(6, 10, 22, 38, BLUE)
         pic.rect(8, 16, 18, 6, WHITE)
         pic.rect(36, 10, 20, 38, YELLOW)
         pic.line([(46, 10), (46, 47)], BLACK)
+        pic.rect(100, 10, 20, 38, DGREY)
+        pic.rect(102, 16, 16, 6, WHITE)  # STAIRS
+        for y in range(26, 46, 4):
+            pic.line([(104, y), (116, y)], LGREY)
         pic.walls(100)
         pic.rect(120, 100, 36, 4, None, 0)
 
@@ -188,10 +192,20 @@ class Casino(Room):
         elif p.said("talk", "clerk") or p.said("talk", "clerk", "rol") or p.said("talk"):
             game.print('"Ring\'s two-fifty," says the prize lady, not looking up. "Duke\'s about to propose. Hush."')
         elif p.has("lounge") and p.verb in ("open", "enter", "use"):
-            game.print(
-                "The lounge is sold out. You hear a drum roll and a groan. You're not missing anything, "
-                "and it's still sold out."
-            )
+            if not self.near(game, 2, 34):
+                game.print("The lounge door is at the back left. Walk over.")
+            elif game.flags.get("honeymoon_done"):
+                game.new_room(27)
+            else:
+                game.print(
+                    "The lounge is sold out. You hear a drum roll and a groan. You're not missing anything, "
+                    "and it's still sold out."
+                )
+        elif p.has("stairs") and p.verb in ("open", "enter", "use", "climb"):
+            if not self.near(game, 94, 126):
+                game.print("The stairs door is at the back, right of the table. Walk over.")
+            else:
+                game.new_room(26)
         elif p.has("elevator") and p.verb in ("open", "enter", "use", "push", "call") or p.said("use", "key", "rol"):
             if not self.near(game, 30, 62):
                 game.print("The elevator is at the back, left of centre. Walk up to it.")

@@ -151,6 +151,39 @@ def main() -> int:
     key(pygame.K_SPACE)
     shot("penthouse-tied")
     key(pygame.K_SPACE)
+    game.flags["freed"] = True
+    game.flags["tied_up"] = False
+    game.ego.visible = True
+    game.ego.frozen = False
+    game.new_room(22)
+    game.messages.clear()
+    game.ego.x, game.ego.y = 18, 110
+    cmd("enter lounge")
+    game.ego.x, game.ego.y = 60, 140
+    cmd("sit", dismiss=False)
+    shot("lounge")
+    key(pygame.K_SPACE)
+    game.new_room(26)
+    game.messages.clear()
+    game.ego.x, game.ego.y = 100, 112
+    shot("execfloor")
+    game.ego.x = 144
+    cmd("get coffee")
+    game.ego.x = 80
+    cmd("give coffee to hope")
+    cmd("get apple")
+    game.ego.x = 16
+    cmd("open door")
+    game.messages.clear()
+    game.ego.x, game.ego.y = 60, 140
+    cycles(3)
+    shot("roof")
+    game.ego.x, game.ego.y = 110, 136
+    cmd("give apple to dawn")
+    cmd("get in the tub", dismiss=False)
+    key(pygame.K_SPACE)
+    key(pygame.K_SPACE)
+    shot("ending")
     game.new_room(10)
     game.messages.clear()
     game.ego.x, game.ego.y = 76, 128

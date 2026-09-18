@@ -59,6 +59,7 @@ class State(Enum):
     QUIZ = auto()
     PLAY = auto()
     REJECTED = auto()
+    WON = auto()
 
 
 class App:
@@ -113,6 +114,10 @@ class App:
         elif self.state == State.REJECTED:
             if ev.type == pygame.KEYDOWN:
                 self.running = False
+        elif self.state == State.WON:
+            if ev.type == pygame.KEYDOWN:
+                self.restart()
+                self.state = State.TITLE
         elif self.state == State.PLAY:
             self.handle_play_event(ev)
 
@@ -150,6 +155,8 @@ class App:
                 if game.dead and game.message is None:
                     self.pending_death = False
                     self.death_dialog()
+                elif game.flags.get("won") and game.message is None:
+                    self.state = State.WON
             return
         if game.dead:
             self.death_dialog()
@@ -215,6 +222,25 @@ class App:
             game.set_speed(action.removeprefix("speed_"))
             game.print(f"Speed set to {game.speed}.")
 
+    def ending_lines(self) -> list[str]:
+        return [
+            "",
+            "",
+            "",
+            "              THE END",
+            "",
+            "   Paul got the girl, the roof, and",
+            "   the hot tub, and kept the suit.",
+            "",
+            f"   Final score: {self.game.score} of {MAX_SCORE}",
+            "",
+            "   Thanks for playing",
+            "        PLEASURE PANTS PAUL",
+            "",
+            "",
+            "      press any key for the title",
+        ]
+
     def death_dialog(self) -> None:
         choices = ["Restore a saved game", "Restart from the beginning", "Quit"]
         actions = ["restore", "restart", "quit"]
@@ -251,6 +277,8 @@ class App:
             draw_text_screen(self.screen, TITLE_LINES, fg=YELLOW, bg=BLACK, top=0)
         elif self.state == State.QUIZ:
             draw_text_screen(self.screen, self.quiz.lines(), fg=WHITE, bg=BLACK)
+        elif self.state == State.WON:
+            draw_text_screen(self.screen, self.ending_lines(), fg=YELLOW, bg=BLACK, top=0)
         elif self.state == State.REJECTED:
             draw_text_screen(
                 self.screen,

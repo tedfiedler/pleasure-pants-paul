@@ -10,8 +10,11 @@ from ppp.rooms.chapel import Chapel
 from ppp.rooms.chapelstreet import ChapelStreet
 from ppp.rooms.disco import Disco
 from ppp.rooms.discostreet import DiscoStreet
+from ppp.rooms.execfloor import ExecFloor
+from ppp.rooms.lounge import Lounge
 from ppp.rooms.mensroom import MensRoom
 from ppp.rooms.penthouse import Penthouse
+from ppp.rooms.roof import Roof
 from ppp.rooms.store import Store
 from ppp.rooms.storestreet import StoreStreet
 from ppp.rooms.street import Street
@@ -39,5 +42,8 @@ def register(game: Game) -> None:
         ChapelStreet(),
         Chapel(),
         Penthouse(),
+        ExecFloor(),
+        Lounge(),
+        Roof(),
     ):
         game.add_room(room)
