@@ -76,6 +76,10 @@ class Picture:
         for surf, col in self._targets(vis, pri):
             surf.set_at((x, y), col)
 
+    def sprite(self, surf: pygame.Surface, x: int, y: int) -> None:
+        """Stamp a colour-keyed sprite into the visual screen with its top-left at (x, y)."""
+        self.visual.blit(surf, (x, y))
+
     def text_pri_band(self, y_top: int, y_bottom: int, pri: int) -> None:
         """Override the priority band for a horizontal strip (e.g. a raised floor)."""
         self.rect(0, y_top, PIC_W, y_bottom - y_top, None, pri)

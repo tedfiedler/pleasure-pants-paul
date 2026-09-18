@@ -25,11 +25,32 @@ from ppp.game import Game
 from ppp.parser import Parsed
 from ppp.pic import Picture
 from ppp.room import Room
-from ppp.rooms.upstairs import DOLORES_ART
 from ppp.sprite import from_ascii
 
-HOPE_LEGEND = {"y": BROWN, "f": LRED, "r": BLUE, "k": BLACK, "w": WHITE}
-HOPE_POS = (78, 96)
+# Hope: brown hair in a clip, white blouse, blue blazer. Drawn before the desk, which hides her lap.
+HOPE_LEGEND = {"b": BROWN, "y": YELLOW, "f": LRED, "k": BLACK, "w": WHITE, "u": BLUE}
+HOPE_ART = """
+.....byyb.....
+....bbbbbb....
+...bbbbbbbb...
+...bbbbbbbb...
+...bbffffbb...
+...bbfkfkbb...
+...bbffffbb...
+....bfffffb...
+.....ffff.....
+....wwwwww....
+..uuwwwwwwuu..
+.uuuuwwwwuuuu.
+.uuuuuwwuuuuu.
+.uuuuuuuuuuuu.
+.uuuuuuuuuuuu.
+fuuuuuuuuuuuuf
+.uuuuuuuuuuuu.
+..kkkkkkkkkk..
+..kkkkkkkkkk..
+"""
+HOPE_POS = (73, 53)  # top-left; the desk top at y=70 cuts her at the blazer
 POOL_DOOR = (4, 30)
 DESK = (56, 108)
 
@@ -80,10 +101,12 @@ class ExecFloor(Room):
         pic.rect(POOL_DOOR[0] + 2, 32, POOL_DOOR[1] - POOL_DOOR[0] - 4, 66, LCYAN)
         pic.rect(POOL_DOOR[0] + 6, 40, 14, 6, WHITE)  # the sign
         pic.rect(POOL_DOOR[0] + 6, 48, 14, 2, RED)
-        # reception desk with Hope behind it
+        # Hope first, then the reception desk in front of her
+        pic.sprite(self.hope(), HOPE_POS[0], HOPE_POS[1])
         pic.rect(50, 70, 60, 30, WHITE)
         pic.rect(50, 68, 60, 3, LGREY)
-        pic.rect(52, 74, 56, 24, LGREY)
+        pic.rect(52, 74, 56, 24, DGREY)  # a dark front panel, so the desk reads as a desk
+        pic.rect(54, 84, 52, 2, LGREY)  # a drawer line
         pic.rect(54, 62, 12, 6, WHITE)  # name plate
         pic.rect(96, 60, 10, 8, YELLOW)  # fruit bowl
         pic.rect(97, 57, 3, 3, RED)
@@ -107,11 +130,8 @@ class ExecFloor(Room):
 
     def hope(self) -> pygame.Surface:
         if self._hope is None:
-            self._hope = from_ascii(DOLORES_ART, HOPE_LEGEND)
+            self._hope = from_ascii(HOPE_ART, HOPE_LEGEND)
         return self._hope
-
-    def objects(self, game: Game) -> list[tuple[pygame.Surface, int, int]]:
-        return [(self.hope(), HOPE_POS[0], HOPE_POS[1])]
 
     def enter(self, game: Game, from_room: int | None) -> None:
         super().enter(game, from_room)

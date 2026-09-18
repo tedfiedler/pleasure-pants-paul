@@ -11,6 +11,7 @@ from ppp.const import (
     LBLUE,
     LCYAN,
     LGREY,
+    LMAGENTA,
     LRED,
     PALETTE,
     PIC_W,
@@ -24,18 +25,24 @@ from ppp.room import Room
 from ppp.sprite import from_ascii
 
 TUB = (84, 100, 60, 28)  # x, y, w, h of the water
-DAWN_POS = (108, 112)
-DAWN_LEGEND = {"h": BLACK, "f": LRED, "k": BLACK, "w": WHITE}
+DAWN_POS = (104, 114)
+DAWN_LEGEND = {"h": BLACK, "f": LRED, "k": BLACK, "w": WHITE, "m": LMAGENTA, "y": YELLOW}
 DAWN_ART = """
-..hhhhhh..
-.hhhhhhhh.
-.hhffffhh.
-.hhfkfkhh.
-.hhffffhh.
-..hhffhh..
-...ffff...
-..ffffff..
-.ffffffff.
+......hhhhhh......
+.....hhhhhhhh.....
+....hhhhhhhhhh....
+....hhffffffhh....
+....hffkffkffh....
+....hffffffffh....
+.....hffffffh.....
+......hfwwfh......
+.......ffff.......
+......ffffff......
+....mmffffffmm....
+..ffffffffffffff..
+.ffff..ffff..ffff.
+ff..........yyy.ff
+............yyy...
 """
 
 
