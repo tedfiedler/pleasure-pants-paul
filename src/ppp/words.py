@@ -4,7 +4,7 @@ Room logic matches on group names, so "l", "look" and "examine" are all
 the word "look". Words in IGNORE are dropped before matching, as AGI did.
 """
 
-IGNORE = frozenset("the a an at to in into on onto of with for up my some this that please and then".split())
+IGNORE = frozenset("the a an at to in into on onto of with for up my some this that please and then game".split())
 
 GROUPS: list[tuple[str, ...]] = [
     # verbs
@@ -32,6 +32,7 @@ GROUPS: list[tuple[str, ...]] = [
     ("quit", "q", "bye"),
     ("save",),
     ("restore", "load"),
+    ("restart",),
     ("score",),
     ("smell", "sniff"),
     ("listen", "hear"),

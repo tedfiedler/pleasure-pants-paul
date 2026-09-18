@@ -22,6 +22,22 @@ original). Type commands such as `look`, `look bar`, `talk to bartender`,
 
 Alt-X (or Cmd-X on a Mac) skips the age quiz.
 
+**ESC** opens the Sierra menu bar (File, Action, Special, Speed). Left and
+right arrows switch menus, up and down pick an item, ENTER activates, ESC
+closes. Shortcuts: F1 help, F2 sound on/off, F3 score, F4 look, F5 save,
+F7 restore, F9 restart, Tab inventory, Alt-Z (Cmd-Z) quit. Typing `save`,
+`restore`, `restart` or `quit` at the prompt does the same thing.
+
+Saved games are JSON files, twelve most recent kept, in:
+
+| Platform | Directory |
+|---|---|
+| macOS | `~/Library/Application Support/PleasurePantsPaul/saves` |
+| Windows | `%APPDATA%\PleasurePantsPaul\saves` |
+| Linux | `$XDG_DATA_HOME/PleasurePantsPaul/saves` |
+
+Set `PPP_SAVE_DIR` to override.
+
 ## How faithful is it?
 
 The engine reproduces the AGI model rather than emulating it:
@@ -38,7 +54,11 @@ The engine reproduces the AGI model rather than emulating it:
 - **Parser**: words map to synonym groups; noise words are dropped; rooms match
   with `said("give", "whiskey", "drunk")`, `anyword` and `rol` (rest of line).
 - **Message boxes**: white, double red border, black text, word-wrapped at 30
-  columns, dismissed by any key.
+  columns, dismissed by any key. Dialogs (save, restore, confirm) use the
+  same box with an inverted highlight bar.
+- **Menu bar**: ESC replaces the status line with File / Action / Special /
+  Speed, with a white dropdown and inverted selection.
+- **Speed**: slow, normal, fast, fastest = 10, 20, 40, 80 cycles a second.
 - **Font**: public-domain 8x8 IBM PC bitmap font.
 - **Score** shown as `Score: N of 222`, awarded once per action.
 
@@ -55,6 +75,9 @@ src/ppp/
   parser.py    tokeniser and said() matcher
   words.py     vocabulary groups
   ui.py        status line, prompt, message box, text pages
+  menu.py      menu bar definition, navigation, drawing, F-key shortcuts
+  dialog.py    confirm / text-entry / list-pick modal dialogs
+  save.py      JSON save files: snapshot, apply, list, platform save dir
   quiz.py      age-verification quiz
   font.py      8x8 font renderer; fontdata.py holds the glyphs
   const.py     geometry, EGA palette, priority bands

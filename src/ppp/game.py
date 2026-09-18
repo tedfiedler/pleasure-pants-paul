@@ -14,6 +14,9 @@ from ppp.room import Room
 
 MAX_SCORE = 222
 
+# AGI speed settings, in game cycles per second
+SPEEDS: dict[str, int] = {"slow": 10, "normal": 20, "fast": 40, "fastest": 80}
+
 DUMB_REPLIES = [
     "That wouldn't accomplish anything, Paul.",
     "You can't do that. Not in those pants.",
@@ -37,7 +40,8 @@ class Game:
     vars: dict[str, int] = field(default_factory=dict)
     messages: deque[str] = field(default_factory=deque)
     sound_on: bool = True
-    quit_requested: bool = False
+    speed: str = "normal"
+    request: str | None = None  # menu-level action asked for by the parser (save, restore, quit...)
     dead: bool = False
     cycle_count: int = 0
     scored: set[str] = field(default_factory=set)
@@ -54,6 +58,18 @@ class Game:
     def dismiss(self) -> None:
         if self.messages:
             self.messages.popleft()
+
+    @property
+    def cycles_per_sec(self) -> int:
+        return SPEEDS.get(self.speed, SPEEDS["normal"])
+
+    def toggle_sound(self) -> None:
+        self.sound_on = not self.sound_on
+        self.print(f"Sound is now {'on' if self.sound_on else 'off'}.")
+
+    def set_speed(self, speed: str) -> None:
+        if speed in SPEEDS:
+            self.speed = speed
 
     # -- scoring & inventory --------------------------------------------
 
@@ -163,9 +179,13 @@ class Game:
                 "Walk with the arrow keys. Press ESC for the menu. Try everything. Twice."
             )
         elif p.said("quit"):
-            self.quit_requested = True
-        elif p.said("save") or p.said("restore"):
-            self.print("Saving and restoring aren't wired up yet. Live dangerously.")
+            self.request = "quit"
+        elif p.said("save") or p.said("save", "rol"):
+            self.request = "save"
+        elif p.said("restore") or p.said("restore", "rol"):
+            self.request = "restore"
+        elif p.said("restart") or p.said("restart", "rol"):
+            self.request = "restart"
         elif p.has("north", "south", "east", "west"):
             self.print(DIRECTION_REPLY)
         elif p.said("wait"):

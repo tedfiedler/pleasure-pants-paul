@@ -8,12 +8,14 @@ from enum import Enum, auto
 
 import pygame
 
-from ppp import __version__
-from ppp.const import BLACK, CYCLES_PER_SEC, PALETTE, PIC_H, PIC_TOP, PIC_W, SCREEN_H, SCREEN_W, WHITE, YELLOW
+from ppp import __version__, save
+from ppp.const import BLACK, PALETTE, PIC_H, PIC_TOP, PIC_W, SCREEN_H, SCREEN_W, WHITE, YELLOW
+from ppp.dialog import ConfirmDialog, Dialog, ListDialog, TextDialog
 from ppp.game import Game
+from ppp.menu import SHORTCUTS, MenuBar
 from ppp.quiz import Quiz
 from ppp.rooms import START_ROOM, register
-from ppp.ui import draw_message, draw_prompt, draw_status, draw_text_screen
+from ppp.ui import draw_box, draw_message, draw_prompt, draw_status, draw_text_screen
 
 TITLE_LINES = [
     "",
@@ -74,6 +76,8 @@ class App:
         self.input = ""
         self.ticks = 0
         self.running = True
+        self.menu = MenuBar()
+        self.dialog: Dialog | None = None
         if skip_quiz:
             self.start_game()
 
@@ -87,6 +91,12 @@ class App:
         self.game.new_room(START_ROOM)
         self.state = State.PLAY
         pygame.key.start_text_input()
+
+    def restart(self) -> None:
+        self.game = Game()
+        register(self.game)
+        self.input = ""
+        self.start_game()
 
     # -- events -------------------------------------------------------------
 
@@ -123,6 +133,16 @@ class App:
 
     def handle_play_event(self, ev: pygame.event.Event) -> None:
         game = self.game
+        if self.dialog is not None:
+            if self.dialog.handle(ev):
+                self.dialog = None
+            return
+        if self.menu.open:
+            if ev.type == pygame.KEYDOWN:
+                action = self.menu.handle_key(ev.key)
+                if action:
+                    self.do_action(action)
+            return
         if game.message is not None:
             if ev.type == pygame.KEYDOWN:
                 game.dismiss()
@@ -131,7 +151,14 @@ class App:
             if len(self.input) < 38:
                 self.input += ev.text
         elif ev.type == pygame.KEYDOWN:
-            if ev.key in ARROWS and not self.input:
+            mods = pygame.key.get_mods()
+            if ev.key == pygame.K_ESCAPE:
+                self.menu.show()
+            elif ev.key in SHORTCUTS:
+                self.do_action(SHORTCUTS[ev.key])
+            elif ev.key == pygame.K_z and mods & (pygame.KMOD_ALT | pygame.KMOD_META):
+                self.do_action("quit")
+            elif ev.key in ARROWS and not self.input:
                 game.ego.set_direction(ARROWS[ev.key])
             elif ev.key == pygame.K_BACKSPACE:
                 self.input = self.input[:-1]
@@ -139,8 +166,61 @@ class App:
                 text, self.input = self.input, ""
                 game.ego.stop()
                 game.handle_input(text)
-            elif ev.key == pygame.K_ESCAPE:
-                self.input = ""
+                self.take_request()
+
+    def take_request(self) -> None:
+        """Route a menu-level action the parser asked for (SAVE, QUIT...)."""
+        if self.game.request:
+            action, self.game.request = self.game.request, None
+            self.do_action(action)
+
+    # -- menu actions -------------------------------------------------------
+
+    def do_action(self, action: str) -> None:
+        game = self.game
+        game.ego.stop()
+        if action == "save":
+            self.dialog = TextDialog("Enter a description for this game:", self.save_game)
+        elif action == "restore":
+            saves = save.list_saves()
+            if not saves:
+                game.print("There are no saved games. Yet. Try F5.")
+            else:
+                self.dialog = ListDialog(
+                    "Select a game to restore:",
+                    [s.description for s in saves],
+                    lambda i: self.restore_game(saves[i]),
+                )
+        elif action == "restart":
+            self.dialog = ConfirmDialog("Restart the game from the beginning?", "restart", self.restart)
+        elif action == "quit":
+            self.dialog = ConfirmDialog("Leave Paul to his fate?", "quit", self.stop)
+        elif action in ("look", "inventory", "score", "help"):
+            game.handle_input(action)
+        elif action == "sound":
+            game.toggle_sound()
+        elif action.startswith("speed_"):
+            game.set_speed(action.removeprefix("speed_"))
+            game.print(f"Speed set to {game.speed}.")
+
+    def save_game(self, description: str) -> None:
+        try:
+            save.write(self.game, description)
+        except OSError as exc:
+            self.game.print(f"Couldn't save: {exc}")
+        else:
+            self.game.print("Game saved. Nothing can hurt you now, except everything.")
+
+    def restore_game(self, info: save.SaveInfo) -> None:
+        try:
+            save.apply(self.game, save.read(info.path))
+        except (OSError, ValueError, KeyError) as exc:
+            self.game.print(f"Couldn't restore that game: {exc}")
+        else:
+            self.game.print(f'Restored "{info.description}". Welcome back, Paul.')
+
+    def stop(self) -> None:
+        self.running = False
 
     # -- drawing ------------------------------------------------------------
 
@@ -178,24 +258,31 @@ class App:
         )
         draw_status(self.screen, game)
         draw_prompt(self.screen, self.input, blink=(self.ticks // 15) % 2 == 0)
-        if game.message is not None:
+        if self.dialog is not None:
+            lines, highlight = self.dialog.lines()
+            draw_box(self.screen, lines, highlight)
+        elif game.message is not None:
             draw_message(self.screen, game.message)
+        if self.menu.open:
+            self.menu.draw(self.screen)
 
     # -- loop ---------------------------------------------------------------
 
     def run(self) -> None:
-        cycle_ms = 1000 / CYCLES_PER_SEC
         acc = 0.0
-        while self.running and not self.game.quit_requested:
+        while self.running:
             dt = self.clock.tick(60)
             self.ticks += 1
             for ev in pygame.event.get():
                 self.handle_event(ev)
-            if self.state == State.PLAY:
+            if self.state == State.PLAY and self.dialog is None and not self.menu.open:
+                cycle_ms = 1000 / self.game.cycles_per_sec
                 acc += dt
                 while acc >= cycle_ms:
                     acc -= cycle_ms
                     self.game.cycle()
+            else:
+                acc = 0.0
             self.draw()
         pygame.quit()
 

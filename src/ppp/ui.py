@@ -38,8 +38,8 @@ def draw_prompt(screen: pygame.Surface, text: str, blink: bool) -> None:
         pygame.draw.rect(screen, PALETTE[WHITE], pygame.Rect(cx, y + CHAR_H - 2, CHAR_W, 2))
 
 
-def draw_message(screen: pygame.Surface, text: str) -> None:
-    lines = wrap(text, BOX_COLS)
+def draw_box(screen: pygame.Surface, lines: list[str], highlight: int | None = None) -> None:
+    """A Sierra message box: white, double red border, black text, centred on the picture."""
     cols = max(len(line) for line in lines)
     w = (cols + 2) * CHAR_W
     h = (len(lines) + 2) * CHAR_H
@@ -52,7 +52,12 @@ def draw_message(screen: pygame.Surface, text: str) -> None:
     pygame.draw.rect(screen, PALETTE[RED], rect.inflate(-4, -4), 1)
     pygame.draw.rect(screen, PALETTE[RED], rect.inflate(-6, -6), 1)
     for i, line in enumerate(lines):
-        draw_text(screen, x + CHAR_W, y + CHAR_H + i * CHAR_H, line, BLACK, WHITE)
+        fg, bg = (WHITE, BLACK) if i == highlight else (BLACK, WHITE)
+        draw_text(screen, x + CHAR_W, y + CHAR_H + i * CHAR_H, line.ljust(cols) if i == highlight else line, fg, bg)
+
+
+def draw_message(screen: pygame.Surface, text: str) -> None:
+    draw_box(screen, wrap(text, BOX_COLS))
 
 
 def draw_text_screen(screen: pygame.Surface, lines: list[str], fg: int = WHITE, bg: int = BLACK, top: int = 2) -> None:
