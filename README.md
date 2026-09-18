@@ -23,8 +23,8 @@ original). Type commands such as `look`, `look bar`, `talk to bartender`,
 
 Rooms so far: the street outside Rooster's (10), the bar (11), the alley to
 the west (12), the inside of a cab (13), the men's room (14), the back room
-behind the alley door (15) and the room upstairs (16). See the player's guide
-below.
+behind the alley door (15), the room upstairs (16), and the Kwik-Snak with
+its own street (17, 18). See the player's guide below.
 
 Alt-X (or Cmd-X on a Mac) skips the age quiz.
 
@@ -130,8 +130,8 @@ make a man like that stop paying attention, and about who gave you what.
 Dolores has a price, a nail file, and a box of chocolates she is not sharing.
 She might soften for a small gesture. What she sells costs thirty dollars,
 and doing business without protection is the oldest death in the genre.
-The store that sells protection isn't built yet, so for now: don't. The
-window is the quick way down.
+The Kwik-Snak sells protection; take a cab. The window is the quick way
+down.
 
 ![A gesture](docs/images/upstairs-rose.png)
 
@@ -139,10 +139,25 @@ window is the quick way down.
 
 ![Inside the cab](docs/images/taxi.png)
 
-Tell the driver where to go: `casino`, `disco`, `store`, `chapel` or
-`Rooster's`. Most of the city is still behind a plywood fence, but the meter
-runs anyway. `Pay the driver`, then `get out`. Don't try it the other way
-round.
+Tell the driver where to go: `store`, `Rooster's`, `casino`, `disco` or
+`chapel`. The store and Rooster's are real; the rest is still behind a
+plywood fence, but the meter runs anyway. `Pay the driver`, then `get out`.
+Don't try it the other way round.
+
+### The Kwik-Snak
+
+![Outside the Kwik-Snak](docs/images/store-street.png)
+
+Where the cab drops you. A pay phone, a newspaper box, and glass doors that
+open for anyone. Call a cab from here to get back.
+
+![Inside the Kwik-Snak](docs/images/store.png)
+
+Three things worth buying: wine, a magazine in brown paper, and the thing
+you have to ask for out loud. Ask at the counter. Don't pocket anything; the
+sign by the register is not a joke.
+
+![The famous purchase](docs/images/store-pricecheck.png)
 
 ### Dying
 
@@ -165,13 +180,16 @@ before you do anything clever, and especially before you do anything stupid.
 | 5 | While Brick is glued to the fight, walk up the stairs. |
 | 2 | Upstairs, with the rose from the dumpster: `give rose to dolores`. |
 | 3 | Then, at the nightstand: `get chocolates`. |
-| 15 | `Pay dolores`, then `kiss dolores`, with protection in your pocket. Not sold yet. |
+| 15 | `Pay dolores`, then `kiss dolores`, with protection from the Kwik-Snak in your pocket. |
 | 1 | On the street: `call a cab`. |
-| 1 each | In the cab: ride to the casino, disco, store or chapel. |
+| 1 each | In the cab: ride to the store, casino, disco or chapel. |
 | 1 | In the cab: `pay the driver`. |
+| 3 | In the Kwik-Snak, at the counter: `buy protection`. Loudly, in the end. |
+| 1 | `Buy wine`. |
+| 1 | `Buy magazine`. |
 
-That is 50 points of a possible 222, 35 of them reachable today. The rest
-of the city is under construction.
+That is 55 points of a possible 222, all reachable. The casino, disco and
+chapel are under construction.
 </details>
 
 The screenshots are regenerated with `uv run python tools/screenshots.py`.

@@ -12,8 +12,8 @@ os.environ.setdefault("SDL_AUDIODRIVER", "dummy")
 
 import pygame  # noqa: E402
 
+from ppp.cab import CAB_STOP_X  # noqa: E402
 from ppp.main import App, State  # noqa: E402
-from ppp.rooms.street import CAB_STOP_X  # noqa: E402
 
 OUT = Path(__file__).resolve().parent.parent / "docs" / "images"
 SCALE = 2
@@ -66,9 +66,25 @@ def main() -> int:
     game.ego.x = CAB_STOP_X + 12
     cmd("get in cab")
     shot("taxi")
-    cmd("casino")
+    cmd("store")
     cmd("pay driver")
     cmd("get out")
+    game.messages.clear()
+    game.ego.x, game.ego.y = 40, 130
+    cycles(12)
+    shot("store-street")
+    game.ego.x, game.ego.y = 76, 120
+    game.ego.set_direction(1)
+    cycles(4)
+    game.messages.clear()
+    game.ego.x, game.ego.y = 80, 112
+    shot("store")
+    cmd("buy protection")
+    key(pygame.K_SPACE)
+    shot("store-pricecheck")
+    key(pygame.K_SPACE)
+    game.new_room(10)
+    game.messages.clear()
     game.ego.x, game.ego.y = 76, 128
     game.ego.set_direction(1)
     cycles(14)

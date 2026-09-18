@@ -181,13 +181,13 @@ class Upstairs(Room):
                 game.print("They're not yours to eat. Yet.")
         elif (
             p.has("hooker")
-            and p.words[0] in ("kiss", "love", "use", "undress")
+            and p.verb in ("kiss", "love", "use", "undress")
             or p.said("love")
             or p.said("use", "bed")
             or p.said("sit", "bed")
         ):
             self._business(game)
-        elif p.has("window") and p.words[0] in ("open", "enter", "use", "push"):
+        elif p.has("window") and p.verb in ("open", "enter", "use", "push"):
             game.print(
                 "You shove the window up and climb out onto the fire escape, which sways, "
                 "and down its ladder, which ends eight feet early. You drop into the alley "

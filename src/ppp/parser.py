@@ -34,6 +34,11 @@ class Parsed:
         return any(n in self.words for n in names)
 
     @property
+    def verb(self) -> str:
+        """The first word group, or "" for an empty or unknown-only line."""
+        return self.words[0] if self.words else ""
+
+    @property
     def empty(self) -> bool:
         return not self.words and self.unknown is None
 
@@ -41,6 +46,7 @@ class Parsed:
 def parse(text: str) -> Parsed:
     out = Parsed()
     for tok in _token_re.findall(text.lower()):
+        tok = tok.removesuffix("'s")  # rooster's -> rooster
         if tok in IGNORE:
             continue
         group = LOOKUP.get(tok)

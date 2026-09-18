@@ -17,6 +17,7 @@ from ppp.const import (
     YELLOW,
 )
 from ppp.game import START_MONEY, Game
+from ppp.npc import draw_person
 from ppp.parser import Parsed
 from ppp.pic import Picture
 from ppp.room import Room
@@ -64,7 +65,7 @@ class Bar(Room):
         for i, c in enumerate((YELLOW, LRED, CYAN, WHITE, LBLUE, YELLOW, LRED, CYAN)):
             pic.rect(28 + i * 11, 40, 4, 16, c)
         # bartender first, so the counter drawn after him hides his legs
-        _draw_person(pic, 62, 46, suit=WHITE, skin=LRED, hair=BLACK, apron=True)
+        draw_person(pic, 62, 46, suit=WHITE, skin=LRED, hair=BLACK, apron=True)
         # the bar counter keeps its default band priority, so Paul (always
         # below it, in a higher band) is drawn in front of it
         pic.rect(16, 68, 84, 14, BROWN)
@@ -76,7 +77,7 @@ class Bar(Room):
         pic.rect(4, 72, 12, 26, LGREY)
         pic.rect(104, 70, 30, 24, RED, 0)  # booth seat
         pic.rect(100, 92, 34, 6, BROWN, 0)  # booth table
-        _draw_person(pic, 114, 74, suit=DGREY, skin=LRED, hair=LGREY)
+        draw_person(pic, 114, 74, suit=DGREY, skin=LRED, hair=LGREY)
         # men's room door, at floor level so Paul can walk in
         pic.rect(138, 44, 22, 56, BROWN)
         pic.rect(140, 46, 18, 54, DGREY)
@@ -200,14 +201,3 @@ class Bar(Room):
             "presses something into your hand. It's a TV remote control. \"Never lose "
             'your shows," he says, and slides under the table.'
         )
-
-
-def _draw_person(pic: Picture, x: int, y: int, *, suit: int, skin: int, hair: int, apron: bool = False) -> None:
-    """A static NPC sprite drawn into the background, keeping the default priority band."""
-    pri = None
-    pic.rect(x + 2, y, 4, 4, hair, pri)
-    pic.rect(x + 2, y + 3, 4, 4, skin, pri)
-    pic.rect(x, y + 7, 8, 12, suit, pri)
-    if apron:
-        pic.rect(x + 2, y + 10, 4, 9, WHITE, pri)
-    pic.rect(x, y + 19, 8, 8, BLACK if not apron else DGREY, pri)

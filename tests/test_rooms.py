@@ -1,9 +1,10 @@
 import pygame
 import pytest
 
+from ppp.cab import CAB_STOP_X
 from ppp.game import Game
 from ppp.rooms import START_ROOM, register
-from ppp.rooms.street import CAB_STOP_X, Street
+from ppp.rooms.street import Street
 
 
 @pytest.fixture
@@ -74,15 +75,15 @@ def test_cab_arrives_and_leaves_if_ignored(game: Game) -> None:
     street = game.room
     assert isinstance(street, Street)
     game.handle_input("call a cab")
-    assert street.cab_state == "arriving" and game.score == 1
+    assert street.curb.state == "arriving" and game.score == 1
     drain(game)
     run(game, 60)
-    assert street.cab_state == "waiting" and street.cab_x == CAB_STOP_X
+    assert street.curb.state == "waiting" and street.curb.x == CAB_STOP_X
     assert street.objects(game)
     run(game, 301)
-    assert street.cab_state == "leaving"
+    assert street.curb.state == "leaving"
     run(game, 80)
-    assert street.cab_state == "none" and not street.objects(game)
+    assert street.curb.state == "none" and not street.objects(game)
 
 
 def test_cab_ride_pay_and_exit(game: Game) -> None:
@@ -111,7 +112,7 @@ def test_cab_ride_pay_and_exit(game: Game) -> None:
     drain(game)
     game.handle_input("exit")
     assert game.room.number == 10 and not game.ego.frozen
-    assert street.cab_state == "leaving"
+    assert street.curb.state == "leaving"
     assert (game.ego.x, game.ego.y) == (100, 136)
 
 
@@ -306,3 +307,91 @@ def test_stairs_down_return_to_the_back_room(game: Game) -> None:
     run(game, 4)
     assert game.room is not None and game.room.number == 15
     assert game.ego.x == 134
+
+
+def test_cab_drives_to_the_store_and_back(game: Game) -> None:
+    game.vars["money"] = 40
+    game.new_room(13)
+    drain(game)
+    game.handle_input("take me to the store")
+    assert game.vars["fare"] == 5 and game.vars["cab_dest"] == 17
+    game.handle_input("pay")
+    game.handle_input("get out")
+    assert game.room is not None and game.room.number == 17
+    street = game.room
+    assert street.objects(game)  # the cab is pulling away from this curb
+    drain(game)
+    game.handle_input("call a cab")
+    run(game, 60)
+    game.ego.x, game.ego.y = CAB_STOP_X + 10, 140
+    game.handle_input("get in the cab")
+    assert game.room.number == 13
+    drain(game)
+    game.handle_input("store")
+    assert game.vars["fare"] == 3  # around the block
+    game.handle_input("pay")
+    drain(game)
+    game.handle_input("rooster's")
+    assert game.vars["fare"] == 5 and game.vars["cab_dest"] == 10
+    game.handle_input("pay")
+    game.handle_input("get out")
+    assert game.room.number == 10
+
+
+def test_store_purchases(game: Game) -> None:
+    game.vars["money"] = 20
+    game.new_room(18)
+    drain(game)
+    game.handle_input("buy protection")
+    assert "counter" in drain(game)[0]
+    game.ego.x, game.ego.y = 80, 110
+    game.handle_input("buy protection")
+    msgs = drain(game)
+    assert game.has("protection") and game.score == 3 and game.vars["money"] == 15
+    assert len(msgs) == 3 and "PRICE CHECK" in msgs[2]
+    game.handle_input("buy wine")
+    assert game.has("wine") and game.vars["money"] == 7
+    game.handle_input("buy a magazine")
+    assert game.has("magazine") and game.vars["money"] == 4 and game.score == 5
+    drain(game)
+    game.handle_input("buy wine")
+    assert "already" in drain(game)[0]
+    game.vars["money"] = 0
+    game.take("wine")
+    game.handle_input("buy wine")
+    assert "$8" in drain(game)[0] and not game.has("wine")
+
+
+def test_shoplifting_is_fatal(game: Game) -> None:
+    game.new_room(18)
+    game.handle_input("get wine")
+    assert game.dead
+
+
+def test_store_street_door_and_phone(game: Game) -> None:
+    game.new_room(17)
+    drain(game)
+    game.ego.x, game.ego.y = 76, 120
+    game.ego.set_direction(1)
+    run(game, 4)
+    assert game.room is not None and game.room.number == 18
+    game.ego.x, game.ego.y = 76, 166
+    game.ego.set_direction(5)
+    run(game, 4)
+    assert game.room.number == 17
+    game.ego.x, game.ego.y = 16, 126
+    game.ego.stop()
+    game.handle_input("use phone")
+    assert "sticky" in drain(game)[0]
+
+
+def test_protection_from_the_store_survives_dolores(game: Game) -> None:
+    game.vars["money"] = 60
+    game.new_room(18)
+    game.ego.x, game.ego.y = 80, 110
+    game.handle_input("buy protection")
+    upstairs(game)
+    game.ego.x, game.ego.y = 104, 110
+    game.handle_input("pay")
+    game.handle_input("kiss dolores")
+    assert not game.dead and game.score == 18
