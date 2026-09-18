@@ -149,7 +149,9 @@ class App:
     def handle_play_event(self, ev: pygame.event.Event) -> None:
         game = self.game
         if self.dialog is not None:
-            if self.dialog.handle(ev):
+            dialog = self.dialog
+            # a finished dialog's callback may have opened the next one; leave that alone
+            if dialog.handle(ev) and self.dialog is dialog:
                 self.dialog = None
             return
         if self.menu.open:
@@ -218,7 +220,10 @@ class App:
                     lambda i: self.restore_game(saves[i]),
                 )
         elif action == "restart":
-            self.dialog = ConfirmDialog("Restart the game from the beginning?", "restart", self.restart)
+            if game.dead:
+                self.restart()
+            else:
+                self.dialog = ConfirmDialog("Restart the game from the beginning?", "restart", self.restart)
         elif action == "quit":
             if game.dead:
                 self.stop()

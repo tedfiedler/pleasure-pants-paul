@@ -4,6 +4,7 @@ import pytest
 from ppp import save
 from ppp.dialog import ConfirmDialog, ListDialog, TextDialog
 from ppp.game import Game
+from ppp.main import App
 from ppp.menu import MENUS, MenuBar
 from ppp.rooms import START_ROOM, register
 
@@ -112,3 +113,37 @@ def test_dialogs() -> None:
     c = ConfirmDialog("sure?", "quit", lambda: fired.append(True))
     assert c.handle(key(pygame.K_ESCAPE)) and not fired
     assert c.handle(key(pygame.K_RETURN)) and fired == [True]
+
+
+@pytest.fixture
+def app(tmp_path, monkeypatch) -> App:
+    monkeypatch.setenv("PPP_SAVE_DIR", str(tmp_path))
+    return App(scale=1, skip_quiz=True)
+
+
+def kill(app: App) -> None:
+    app.game.die("Paul dies, for testing purposes.")
+    while app.game.message is not None:
+        app.handle_event(key(pygame.K_RETURN))
+    assert isinstance(app.dialog, ListDialog)
+
+
+def test_restart_from_the_death_dialog(app: App) -> None:
+    app.game.score = 5
+    kill(app)
+    app.handle_event(key(pygame.K_DOWN))
+    app.handle_event(key(pygame.K_RETURN))
+    assert app.dialog is None
+    assert not app.game.dead and app.game.score == 0
+    assert app.game.room is not None and app.game.room.number == START_ROOM
+
+
+def test_restore_from_the_death_dialog(app: App) -> None:
+    app.game.score = 5
+    save.write(app.game, "before the bus")
+    kill(app)
+    app.handle_event(key(pygame.K_RETURN))  # "Restore a saved game" opens the save list
+    assert isinstance(app.dialog, ListDialog) and app.dialog.items == ["before the bus"]
+    app.handle_event(key(pygame.K_RETURN))
+    assert app.dialog is None
+    assert not app.game.dead and app.game.score == 5
