@@ -76,6 +76,8 @@ def main() -> int:
     game.ego.x, game.ego.y = 60, 108
     shot("bar")
     cmd("buy whiskey")
+    game.ego.x, game.ego.y = 116, 108
+    cmd("give whiskey to drunk")
     game.ego.x, game.ego.y = 144, 104
     game.ego.set_direction(1)
     cycles(6)
@@ -92,6 +94,19 @@ def main() -> int:
     cmd("search dumpster")
     cmd("get rose")
     shot("alley")
+    game.ego.x, game.ego.y = 104, 108
+    cmd("rooster sent me")
+    game.ego.set_direction(1)
+    cycles(8)
+    game.messages.clear()
+    game.ego.x, game.ego.y = 100, 140
+    shot("backroom")
+    cmd("use remote", dismiss=False)
+    shot("backroom-remote")
+    key(pygame.K_SPACE)
+    game.new_room(12)
+    game.messages.clear()
+    game.ego.x, game.ego.y = 40, 112
     cmd("kick the dog")
     shot("death")
     game.messages.clear()

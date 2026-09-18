@@ -22,8 +22,8 @@ original). Type commands such as `look`, `look bar`, `talk to bartender`,
 `inventory`, `score`, `quit`.
 
 Rooms so far: the street outside Rooster's (10), the bar (11), the alley to
-the west (12), the inside of a cab (13) and the men's room (14). See the
-player's guide below.
+the west (12), the inside of a cab (13), the men's room (14) and the back
+room behind the alley door (15). See the player's guide below.
 
 Alt-X (or Cmd-X on a Mac) skips the age quiz.
 
@@ -112,6 +112,16 @@ A dumpster worth searching, a dog worth leaving alone, and a steel door with
 a slot that wants a password. Don't stand around: someone else uses this
 alley, and he's not there to chat.
 
+### The back room
+
+![The back room](docs/images/backroom.png)
+
+Through the alley door, once it opens. Brick lives on the couch and the
+stairs live behind Brick. He is watching television. Think about what would
+make a man like that stop paying attention, and about who gave you what.
+
+![Changing the channel](docs/images/backroom-remote.png)
+
 ### The cab
 
 ![Inside the cab](docs/images/taxi.png)
@@ -137,13 +147,15 @@ before you do anything clever, and especially before you do anything stupid.
 | 4 | Walk to the booth: `give whiskey to drunk`. He hands over a TV remote. |
 | 2 | In the men's room: `read graffiti` until you reach the password line. |
 | 2 | In the alley: `search dumpster`, then `get rose`. |
-| 5 | In the alley, by the steel door: `rooster sent me`. |
+| 5 | In the alley, by the steel door: `rooster sent me`. Then walk in. |
+| 4 | In the back room, with the drunk's remote: `use remote`. |
+| 5 | While Brick is glued to the fight, walk up the stairs. |
 | 1 | On the street: `call a cab`. |
 | 1 each | In the cab: ride to the casino, disco, store or chapel. |
 | 1 | In the cab: `pay the driver`. |
 
-That is 21 points of a possible 222. The rest of the city is under
-construction.
+That is 30 points of a possible 222. The rest of the city, and the top of
+the stairs, are under construction.
 </details>
 
 The screenshots are regenerated with `uv run python tools/screenshots.py`.

@@ -2,6 +2,7 @@
 
 from ppp.game import Game
 from ppp.rooms.alley import Alley
+from ppp.rooms.backroom import BackRoom
 from ppp.rooms.bar import Bar
 from ppp.rooms.mensroom import MensRoom
 from ppp.rooms.street import Street
@@ -11,5 +12,5 @@ START_ROOM = 10
 
 
 def register(game: Game) -> None:
-    for room in (Street(), Bar(), Alley(), Taxi(), MensRoom()):
+    for room in (Street(), Bar(), Alley(), Taxi(), MensRoom(), BackRoom()):
         game.add_room(room)

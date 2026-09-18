@@ -20,6 +20,7 @@ from ppp.room import Room
 
 MUGGER_WARN = 400  # cycles in the alley before footsteps
 MUGGER_ARRIVES = 500
+DOOR_X = (94, 122)  # the steel door, once open, is walked into like any other
 
 
 class Alley(Room):
@@ -33,7 +34,7 @@ class Alley(Room):
     )
     horizon = 104
     edges = {"right": 10}
-    spawns = {"default": (140, 150)}
+    spawns = {"default": (140, 150), 15: (104, 110)}
     looks = {
         "trash": "A green dumpster the size of a small apartment, and better furnished. The lid is open a crack.",
         "dog": "A scruffy brown dog, asleep against the dumpster. One ear twitches. "
@@ -91,8 +92,23 @@ class Alley(Room):
     def enter(self, game: Game, from_room: int | None) -> None:
         super().enter(game, from_room)
         self.timer = 0
+        if game.flags.get("backdoor_open") and game.pic is not None:
+            game.pic.rect(98, 46, 20, 56, BLACK)  # the door stands open on darkness
+            game.pic.rect(100, 50, 16, 6, WHITE)
+
+    def _at_door(self, game: Game) -> bool:
+        return DOOR_X[0] <= game.ego.centre_x <= DOOR_X[1] and game.ego.y <= 120
 
     def update(self, game: Game) -> None:
+        ego = game.ego
+        if (
+            game.flags.get("backdoor_open")
+            and ego.direction == 1
+            and DOOR_X[0] <= ego.centre_x <= DOOR_X[1]
+            and ego.y <= self.horizon + 1
+        ):
+            game.new_room(15)
+            return
         self.timer += 1
         if self.timer == MUGGER_WARN:
             game.print(
@@ -140,14 +156,19 @@ class Alley(Room):
             self._password(game)
         elif p.said("knock", "door") or p.said("push", "door"):
             if game.flags.get("backdoor_open"):
-                game.print('The slot slides open. "You again. Still renovating. Go drink something."')
+                game.print("It's already open, Paul. Knocking on an open door is a cry for help.")
             else:
                 game.print(
                     'The slot slides open. Two eyes. "Password?" You offer your best smile. '
                     "The slot slides shut. Evidently that's not the password."
                 )
-        elif p.said("open", "door") or p.said("enter", "door") or p.said("pull", "door"):
-            game.print("No handle. Not for you, anyway. There's a slot; maybe try knocking.")
+        elif p.said("open", "door") or p.said("enter", "door") or p.said("pull", "door") or p.said("enter", "room"):
+            if not game.flags.get("backdoor_open"):
+                game.print("No handle. Not for you, anyway. There's a slot; maybe try knocking.")
+            elif self._at_door(game):
+                game.new_room(15)
+            else:
+                game.print("It's open. Walk on in; the darkness isn't going to come to you.")
         elif p.said("talk", "rol") and p.has("password"):
             if game.flags.get("knows_password"):
                 game.print("You know it. Say it. Out loud, to the door, like a person with a plan.")
@@ -164,19 +185,21 @@ class Alley(Room):
         return True
 
     def _password(self, game: Game) -> None:
-        if not (86 <= game.ego.centre_x <= 130 and game.ego.y <= 120):
+        if not self._at_door(game):
             game.print("Say it to the door. Doors are very literal.")
             return
         if game.flags.get("backdoor_open"):
-            game.print('"I heard you the first time." The slot stays shut.')
+            game.print('"I heard you the first time." The door is open. Use it.')
             return
         game.flags["backdoor_open"] = True
         game.award("backdoor", 5)
+        assert game.pic is not None
+        game.pic.rect(98, 46, 20, 56, BLACK)
+        game.pic.rect(100, 50, 16, 6, WHITE)
         game.print(
-            'The slot slides open. "Rooster sent you? Why didn\'t you say so." Bolts clank. '
-            "The door opens on a stairwell, a bare bulb, and a large man with a mop. "
-            '"Back room\'s being renovated. Come back next week." The door shuts, gently, '
-            "which is the nicest thing anyone has done for you all night."
+            'The slot slides open. "Rooster sent you? Why didn\'t you say so." Bolts clank '
+            "and the door swings inward on a dim room, a flickering television, and a "
+            "wall of cigarette smoke that has been waiting for you personally."
         )
 
     def _search(self, game: Game) -> None:

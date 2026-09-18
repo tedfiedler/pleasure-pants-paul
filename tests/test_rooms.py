@@ -197,3 +197,47 @@ def test_drinking_from_the_urinal_is_fatal(game: Game) -> None:
     game.new_room(14)
     game.handle_input("drink water")
     assert game.dead
+
+
+def test_open_alley_door_leads_to_back_room_and_brick_ejects(game: Game) -> None:
+    game.new_room(12)
+    game.ego.x, game.ego.y = 104, 108
+    game.handle_input("enter door")
+    assert game.room is not None and game.room.number == 12  # still locked
+    game.handle_input("rooster sent me")
+    drain(game)
+    game.ego.set_direction(1)
+    run(game, 8)
+    assert game.room.number == 15
+    drain(game)
+    game.ego.x, game.ego.y = 140, 100
+    game.ego.set_direction(1)
+    run(game, 6)
+    assert game.room.number == 12  # posted back through the door
+    assert (game.ego.x, game.ego.y) == (104, 110)
+
+
+def test_remote_distracts_brick_and_stairs_score(game: Game) -> None:
+    game.flags["backdoor_open"] = True
+    game.new_room(15)
+    drain(game)
+    game.handle_input("use remote")
+    assert not game.flags.get("brick_distracted")  # no remote yet
+    game.give("remote")
+    game.handle_input("change channel")
+    assert game.flags["brick_distracted"] and game.score == 4
+    game.handle_input("use remote")
+    assert game.score == 4
+    drain(game)
+    game.ego.x, game.ego.y = 140, 100
+    game.handle_input("climb the stairs")
+    assert game.room is not None and game.room.number == 15 and game.score == 9
+    assert "OPENING SOON" in drain(game)[0]
+    frames = game.room.objects(game)
+    assert len(frames) == 2
+
+
+def test_touching_brick_is_fatal(game: Game) -> None:
+    game.new_room(15)
+    game.handle_input("kiss brick")
+    assert game.dead

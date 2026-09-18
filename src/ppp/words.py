@@ -93,8 +93,13 @@ GROUPS: list[tuple[str, ...]] = [
     ("rooster", "roosters"),
     ("sent",),
     ("hooker", "prostitute", "woman", "lady", "girl"),
-    ("pimp", "bouncer", "thug"),
-    ("tv", "television", "set"),
+    ("bouncer", "brick", "pimp", "thug", "goon", "mister", "mr"),
+    ("tv", "television", "set", "screen"),
+    ("couch", "sofa", "cushion", "cushions"),
+    ("stairs", "staircase", "steps", "stairway", "upstairs"),
+    ("crate",),
+    ("channel", "channels", "show", "program"),
+    ("change", "switch", "turn", "click"),
 ]
 
 ANY = "anyword"
