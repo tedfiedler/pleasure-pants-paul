@@ -83,6 +83,25 @@ def main() -> int:
     key(pygame.K_SPACE)
     shot("store-pricecheck")
     key(pygame.K_SPACE)
+    cmd("buy wine")
+    cmd("buy magazine")
+    game.new_room(19)
+    game.messages.clear()
+    game.ego.x, game.ego.y = 40, 130
+    shot("disco-street")
+    game.ego.x, game.ego.y = 100, 126
+    cmd("give magazine to doorman")
+    game.ego.x, game.ego.y = 76, 120
+    game.ego.set_direction(1)
+    cycles(4)
+    game.messages.clear()
+    game.give("candy")
+    game.ego.x, game.ego.y = 30, 140
+    cmd("give chocolates to ginger")
+    cmd("give wine to ginger")
+    cmd("dance with ginger")
+    cycles(20)
+    shot("disco")
     game.new_room(10)
     game.messages.clear()
     game.ego.x, game.ego.y = 76, 128

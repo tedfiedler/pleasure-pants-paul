@@ -37,6 +37,10 @@ class Room:
     def update(self, game: Game) -> None:
         """Per-cycle logic (timers, NPC animation, triggers)."""
 
+    def underlays(self, game: Game) -> list[tuple[pygame.Surface, int, int]]:
+        """Animated floor-level surfaces as (surface, x, top_y), drawn under everything."""
+        return []
+
     def objects(self, game: Game) -> list[tuple[pygame.Surface, int, int]]:
         """Animated objects as (surface, x, baseline_y), drawn in baseline order with Paul."""
         return []

@@ -23,8 +23,9 @@ original). Type commands such as `look`, `look bar`, `talk to bartender`,
 
 Rooms so far: the street outside Rooster's (10), the bar (11), the alley to
 the west (12), the inside of a cab (13), the men's room (14), the back room
-behind the alley door (15), the room upstairs (16), and the Kwik-Snak with
-its own street (17, 18). See the player's guide below.
+behind the alley door (15), the room upstairs (16), the Kwik-Snak with its
+own street (17, 18) and the Boogie Palace with its own street (19, 20). See
+the player's guide below.
 
 Alt-X (or Cmd-X on a Mac) skips the age quiz.
 
@@ -139,9 +140,9 @@ down.
 
 ![Inside the cab](docs/images/taxi.png)
 
-Tell the driver where to go: `store`, `Rooster's`, `casino`, `disco` or
-`chapel`. The store and Rooster's are real; the rest is still behind a
-plywood fence, but the meter runs anyway. `Pay the driver`, then `get out`.
+Tell the driver where to go: `store`, `disco`, `Rooster's`, `casino` or
+`chapel`. The first three are real; the casino and chapel are still behind
+a plywood fence, but the meter runs anyway. `Pay the driver`, then `get out`.
 Don't try it the other way round.
 
 ### The Kwik-Snak
@@ -158,6 +159,21 @@ you have to ask for out loud. Ask at the counter. Don't pocket anything; the
 sign by the register is not a joke.
 
 ![The famous purchase](docs/images/store-pricecheck.png)
+
+### The Boogie Palace
+
+![Outside the Boogie Palace](docs/images/disco-street.png)
+
+Members only, says the doorman, and you are not a member. He isn't after
+money. He has money. Look at what you're carrying and think about what a
+bored man on a door might want to read.
+
+![On the floor](docs/images/disco.png)
+
+Inside: a lit floor, a mirror ball, a DJ, and Ginger, alone at the only
+table. She likes gifts, in the right order, and then she likes to dance.
+After that she wants a ring, and she'll tell you where to meet her. Leave
+the LADIES door alone.
 
 ### Dying
 
@@ -187,8 +203,12 @@ before you do anything clever, and especially before you do anything stupid.
 | 3 | In the Kwik-Snak, at the counter: `buy protection`. Loudly, in the end. |
 | 1 | `Buy wine`. |
 | 1 | `Buy magazine`. |
+| 2 | Outside the Boogie Palace: `give magazine to doorman`. |
+| 3 | Inside, at Ginger's table: `give chocolates to ginger`. |
+| 2 | Then `give wine to ginger`. |
+| 5 | Then `dance with ginger`. She'll want a ring next. |
 
-That is 55 points of a possible 222, all reachable. The casino, disco and
+That is 67 points of a possible 222, all reachable. The casino and the
 chapel are under construction.
 </details>
 

@@ -275,6 +275,8 @@ class App:
         self.screen.fill(PALETTE[BLACK])
         frame = game.pic.visual.copy()
         assert game.room is not None
+        for surf, x, top in game.room.underlays(game):
+            frame.blit(surf, (x, top))
         ego_drawn = False
         for surf, x, baseline in sorted(game.room.objects(game), key=lambda o: o[2]):
             if not ego_drawn and baseline > game.ego.y:

@@ -395,3 +395,73 @@ def test_protection_from_the_store_survives_dolores(game: Game) -> None:
     game.handle_input("pay")
     game.handle_input("kiss dolores")
     assert not game.dead and game.score == 18
+
+
+def test_doorman_needs_the_magazine(game: Game) -> None:
+    game.new_room(19)
+    drain(game)
+    game.ego.x, game.ego.y = 76, 120
+    game.ego.set_direction(1)
+    run(game, 4)
+    assert game.room is not None and game.room.number == 19
+    game.ego.x, game.ego.y = 100, 126
+    game.handle_input("give magazine to doorman")
+    assert "don't have" in drain(game)[0]
+    game.give("magazine")
+    game.handle_input("give magazine to doorman")
+    assert game.flags["disco_admitted"] and game.score == 2 and not game.has("magazine")
+    drain(game)
+    game.ego.x, game.ego.y = 76, 120
+    game.ego.set_direction(1)
+    run(game, 4)
+    assert game.room.number == 20
+
+
+def test_cab_reaches_the_disco(game: Game) -> None:
+    game.vars["money"] = 20
+    game.new_room(13)
+    drain(game)
+    game.handle_input("disco")
+    game.handle_input("pay")
+    game.handle_input("get out")
+    assert game.room is not None and game.room.number == 19
+
+
+def test_wooing_ginger_in_order(game: Game) -> None:
+    game.new_room(20)
+    drain(game)
+    game.ego.x, game.ego.y = 30, 140
+    game.give("wine")
+    game.give("candy")
+    game.handle_input("give wine to ginger")
+    assert "right order" in drain(game)[0] and game.has("wine")
+    game.handle_input("dance with ginger")
+    assert "reason" in drain(game)[0]
+    game.handle_input("give chocolates to her")
+    assert game.flags["ginger_candy"] and game.score == 3
+    game.handle_input("give her the wine")
+    assert game.flags["ginger_wine"] and game.score == 5
+    drain(game)
+    game.handle_input("dance with ginger")
+    room = game.room
+    assert room is not None and game.ego.frozen
+    from ppp.rooms.disco import DANCE_CYCLES, Disco
+
+    assert isinstance(room, Disco) and room.dance_timer == DANCE_CYCLES
+    drain(game)
+    run(game, DANCE_CYCLES)
+    assert game.flags["ginger_danced"] and game.score == 10 and not game.ego.frozen
+    assert "ring" in (game.message or "")
+    drain(game)
+    game.ego.x, game.ego.y = 30, 140  # back to her table after the song
+    game.handle_input("talk to ginger")
+    assert "chapel" in drain(game)[0]
+    game.handle_input("dance with her")
+    assert "rule" in drain(game)[0]
+
+
+def test_ladies_room_is_fatal(game: Game) -> None:
+    game.new_room(20)
+    game.ego.x, game.ego.y = 110, 104
+    game.handle_input("enter door")
+    assert game.dead

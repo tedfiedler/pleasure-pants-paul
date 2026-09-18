@@ -24,7 +24,7 @@ from ppp.room import Room
 DESTINATIONS: dict[str, tuple[str, int, int | None]] = {
     "bar": ("Rooster's", 5, 10),
     "casino": ("the Golden Sock Casino", 5, None),
-    "disco": ("the Boogie Palace", 5, None),
+    "disco": ("the Boogie Palace", 5, 19),
     "store": ("the Kwik-Snak convenience store", 5, 17),
     "chapel": ("the Chapel of Eternal Regret", 5, None),
 }
