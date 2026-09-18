@@ -1,0 +1,42 @@
+[project]
+name = "pleasure-pants-paul"
+version = "0.1.0"
+description = "A text-parser graphic adventure in the 1987 Sierra AGI style"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.13"
+dependencies = [
+    "pygame-ce>=2.5",
+]
+
+[project.scripts]
+ppp = "ppp.main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ppp"]
+
+[tool.mypy]
+strict = true
+python_version = "3.13"
+
+[tool.ruff]
+target-version = "py313"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "ruff>=0.6",
+    "mypy>=1.11",
+    "pyinstaller>=6",
+]
