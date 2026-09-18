@@ -43,7 +43,7 @@ class Taxi(Room):
     spawns = {"default": (96, 164)}
     looks = {
         "driver": "A thick neck, a flat cap, and a pair of eyes in the mirror that have "
-        "already decided what you are. He's right.",
+        "already decided what you are. [He's|She's] right.",
         "meter": "A red LED meter. It is either your fare or a countdown.",
         "dashboard": "A dashboard furred with dust, a dangling air-freshener shaped like a "
         "tree, and a radio playing static with a beat.",
@@ -83,6 +83,9 @@ class Taxi(Room):
         pic.ellipse(44, 2, 24, 24, LRED)  # head
         pic.ellipse(42, 0, 28, 10, BLACK)  # flat cap
         pic.rect(40, 8, 32, 3, BLACK)  # brim
+        if pic.pauline:  # her hair, out from under the cap and down to the collar
+            pic.rect(44, 11, 24, 12, BROWN)
+            pic.rect(42, 19, 28, 9, BROWN)
         # steering wheel, seen edge-on past his shoulder
         pic.ellipse(34, 84, 44, 8, BLACK, None, 2)
         # front seat back across the cab, and the rear bench in front of the camera
@@ -103,7 +106,10 @@ class Taxi(Room):
         if from_room is not None:
             game.vars["cab_origin"] = from_room
         game.vars["cab_dest"] = game.vars.get("cab_origin", 10)
-        game.print('You slide into the back seat. The driver folds his racing form. "Where to, pal? Meter\'s running."')
+        game.print(
+            "You slide into the back seat. The driver folds [his|her] racing form. "
+            '"Where to, [pal|hon]? Meter\'s running."'
+        )
 
     def _destination(self, p: Parsed) -> str | None:
         if p.has("look"):
@@ -125,7 +131,7 @@ class Taxi(Room):
         elif p.said("talk", "driver") or p.said("talk", "driver", "rol") or p.said("talk"):
             game.award("talk_driver")
             if fare:
-                game.print(f'"That\'s ${fare}, pal. Then we can be friends."')
+                game.print(f'"That\'s ${fare}, [pal|hon]. Then we can be friends."')
             else:
                 game.print(
                     '"Where to? Rooster\'s, the casino, the disco, the store, the chapel. Pick one, I got a life."'
@@ -139,15 +145,15 @@ class Taxi(Room):
         elif p.said("enter", "cab") or p.said("enter", "cab", "rol"):
             game.print("You're in it. This is the in part.")
         elif p.said("look", "money"):
-            game.print(f"You have ${money}. The driver, judging by his face, has more.")
+            game.print(f"You have ${money}. The driver, judging by [his|her] face, has more.")
         elif p.said("use", "radio") or p.said("push", "radio"):
             game.print('You reach for the radio. "Touch it and walk," says the driver, not turning around.')
         elif p.said("kiss", "driver"):
-            game.print("The driver's eyes in the mirror say no. His whole neck says no.")
+            game.print("The driver's eyes in the mirror say no. [His|Her] whole neck says no.")
         elif p.said("smell"):
             game.print("Pine. Then, under the pine, everything the pine was hired to hide.")
         elif p.said("listen"):
-            game.print("Static, a dispatcher, and the driver breathing through his nose.")
+            game.print("Static, a dispatcher, and the driver breathing through [his|her] nose.")
         else:
             return False
         return True
@@ -161,7 +167,7 @@ class Taxi(Room):
         if room is not None and room == game.vars.get("cab_origin"):
             game.vars["fare"] = AROUND_THE_BLOCK
             game.print(
-                f'"{name}? Pal, you\'re parked outside it." He drives around the block '
+                f'"{name}? [Pal|Hon], you\'re parked outside it." [He|She] drives around the block '
                 f'anyway, slowly, with the meter on. "Three bucks."'
             )
         elif room is not None:
@@ -171,24 +177,26 @@ class Taxi(Room):
             if all(f"ride_{d}" in game.scored for d in DESTINATIONS):
                 game.award("seen_town")
             game.print(
-                f"He floors it toward {name}. The city smears past: neon, brick, a man "
-                f"arguing with a lamp post. He stops at the curb outside {name}. "
+                f"[He|She] floors it toward {name}. The city smears past: neon, brick, a [man|woman] "
+                f"arguing with a lamp post. [He|She] stops at the curb outside {name}. "
                 f'"Five bucks."'
             )
         else:
             game.vars["fare"] = price
             game.award(f"ride_{dest}")
             game.print(
-                f"He floors it toward {name}. The city smears past. Then he brakes hard: "
+                f"[He|She] floors it toward {name}. The city smears past. Then [he|she] brakes hard: "
                 f"{name} is behind a plywood fence and a sign that says COMING SOON. "
-                f'He drives you back to Rooster\'s. "Five bucks. Not my fault."'
+                f'[He|She] drives you back to Rooster\'s. "Five bucks. Not my fault."'
             )
 
     def _pay(self, game: Game, fare: int, money: int) -> None:
         if not fare and money >= 1 and "tip_driver" not in game.scored and game.flags.get("cab_ride_done"):
             game.vars["money"] = money - 1
             game.award("tip_driver")
-            game.print('You hand over a dollar on top. He looks at it. "Big spender." He means it, a little.')
+            game.print(
+                'You hand over a dollar on top. [He|She] looks at it. "Big spender." [He|She] means it, a little.'
+            )
         elif not fare:
             game.print('"Pay for what? Tell me where you\'re going first."')
         elif money >= fare:
@@ -196,22 +204,23 @@ class Taxi(Room):
             game.vars["fare"] = 0
             game.award("pay_cab")
             game.print(
-                f'You hand over ${fare}. "Pleasure," he says, meaning the money. You have ${game.vars["money"]} left.'
+                f'You hand over ${fare}. "Pleasure," [he|she] says, meaning the money. '
+                f"You have ${game.vars['money']} left."
             )
         else:
             game.vars["fare"] = 0
             game.print(
                 f"You have ${money}. The fare is ${fare}. The driver does the arithmetic, "
-                "reaches back, opens your door, and helps you out with his foot. "
+                "reaches back, opens your door, and helps you out with [his|her] foot. "
                 "You land on the sidewalk outside Rooster's."
             )
             game.new_room(10)
 
     def _leave(self, game: Game, fare: int) -> None:
         if fare:
-            game.print(f'The doors lock with a clunk. "Meter says ${fare}, pal." He waits.')
+            game.print(f'The doors lock with a clunk. "Meter says ${fare}, [pal|hon]." [He|She] waits.')
         elif not game.flags.get("cab_ride_done"):
-            game.print('"Nice. Real nice. Waste a man\'s time." You climb out onto the sidewalk.')
+            game.print('"Nice. Real nice. Waste a [man|woman]\'s time." You climb out onto the sidewalk.')
             game.new_room(int(game.vars.get("cab_origin", 10)))
         else:
             game.print("You slide out onto the sidewalk. The cab idles, hopeful.")

@@ -18,7 +18,8 @@ Point = tuple[int, int]
 
 
 class Picture:
-    def __init__(self) -> None:
+    def __init__(self, pauline: bool = False) -> None:
+        self.pauline = pauline  # rooms draw the mirror-image cast when set
         self.visual = pygame.Surface((PIC_W, PIC_H))
         self.visual.fill(PALETTE[WHITE])
         # priority stored as a greyscale index in the red channel

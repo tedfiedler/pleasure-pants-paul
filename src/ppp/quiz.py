@@ -96,7 +96,7 @@ class Quiz:
     def lines(self) -> list[str]:
         """Render the current state as 40-column text lines."""
         out = [
-            "   PLEASURE PANTS PAUL - AGE CHECK",
+            "   PLEASURE PANTS [PAUL|PAULINE] - AGE CHECK",
             "",
             "This game is for grown-ups. Prove it.",
             f"Question {self.index + 1} of {len(self.questions)}    Wrong: {self.wrong}/{MAX_WRONG}",

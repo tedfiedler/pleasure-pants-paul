@@ -135,7 +135,9 @@ class ChapelStreet(Room):
         elif p.said("get", "rose") or p.said("smell", "rose"):
             game.print("Plastic. They smell of nothing, which, given the neighbourhood, is a mercy.")
         elif p.said("smell"):
-            game.print("Rice, plastic flowers, and a hint of the organist's aftershave from the last service.")
+            game.print(
+                "Rice, plastic flowers, and a hint of the organist's [aftershave|perfume] from the last service."
+            )
         elif p.said("listen"):
             game.print("An organ inside, wheezing through something that was a hymn once.")
         else:

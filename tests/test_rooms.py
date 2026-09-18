@@ -183,10 +183,10 @@ def test_graffiti_cycles_and_teaches_the_password(game: Game) -> None:
         game.handle_input("read graffiti")
         seen.append(drain(game)[0])
     for line in GRAFFITI:
-        assert any(line in s for s in seen)
+        assert any(game.tr(line) in s for s in seen)  # the wall carries cast markup
     assert game.flags["knows_password"] and game.score == 4  # the password line, and the whole wall
     game.handle_input("read the wall")
-    assert GRAFFITI[0] in drain(game)[0]  # wraps around
+    assert game.tr(GRAFFITI[0]) in drain(game)[0]  # wraps around
     game.handle_input("read graffiti")
     game.handle_input("read graffiti")
     game.handle_input("read graffiti")

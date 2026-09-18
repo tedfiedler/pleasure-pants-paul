@@ -33,7 +33,7 @@ class CasinoStreet(Room):
     name = "Outside the Golden Sock"
     description = (
         "The Golden Sock Casino: a wall of light bulbs, a red carpet that stops "
-        "exactly at the curb, and doors that never close. A doorman in gold braid "
+        "exactly at the curb, and doors that never close. A [doorman|doorwoman] in gold braid "
         "holds one open for everybody, even you. Cabs stop at the curb."
     )
     horizon = CURB_Y
@@ -43,7 +43,7 @@ class CasinoStreet(Room):
         "building": "Bulbs, chrome, and a gold sock the size of a car, lit from inside. Taste was not consulted.",
         "sign": "THE GOLDEN SOCK, in bulbs. A few are out, which spells something ruder if you squint.",
         "door": "Glass doors, held open. Casinos want you in. Getting out is your problem.",
-        "bouncer": "A doorman in gold braid with a smile for everyone. He is paid by the smile.",
+        "bouncer": "A [doorman|doorwoman] in gold braid with a smile for everyone. [He|She] is paid by the smile.",
         "floor": "Red carpet on the sidewalk, worn to pink where the losers walk out.",
         "window": "No windows, no clocks. The casino would prefer you didn't know either.",
     }
@@ -95,7 +95,7 @@ class CasinoStreet(Room):
             game.flags["seen_casinostreet"] = True
             game.print(
                 "Ten thousand light bulbs, and every one of them is looking at your wallet. "
-                '"Welcome to the Golden Sock, sir," says the doorman, to the wallet.'
+                '"Welcome to the Golden Sock, [sir|ma\'am]," says the [doorman|doorwoman], to the wallet.'
             )
 
     def update(self, game: Game) -> None:
@@ -110,7 +110,7 @@ class CasinoStreet(Room):
             pass
         elif p.said("talk", "bouncer") or p.said("talk", "bouncer", "rol") or p.said("talk"):
             game.award("talk_doorman")
-            game.print('"Good luck in there, sir." He means it. He\'s seen the odds.')
+            game.print("\"Good luck in there, [sir|ma'am].\" [He|She] means it. [He|She]'s seen the odds.")
         elif p.said("open", "door") or p.said("enter", "door") or p.said("enter", "casino") or p.said("enter"):
             if self.curb.near(game):
                 game.new_room(13)
@@ -121,7 +121,7 @@ class CasinoStreet(Room):
         elif p.said("smell"):
             game.print("Cigar smoke, carpet shampoo, and money, mostly other people's.")
         elif p.said("listen"):
-            game.print("Bells. Coins. A woman somewhere screaming with joy or the other thing.")
+            game.print("Bells. Coins. A [woman|man] somewhere screaming with joy or the other thing.")
         else:
             return False
         return True

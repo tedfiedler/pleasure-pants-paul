@@ -111,11 +111,11 @@ class Street(Room):
         if ego.y >= FAR_LANE_Y:
             self.road_timer += 1
             if self.road_timer == 12:
-                game.print("Horns. Headlights. This is not a place to stand, Paul.")
+                game.print("Horns. Headlights. This is not a place to stand, [Paul].")
             elif self.road_timer >= 40:
                 game.die(
                     "A bus, a delivery van and a moped hit you in that order. The moped "
-                    "is the one that does it. Paul is now a stain with excellent tailoring."
+                    "is the one that does it. [Paul] is now a stain with excellent tailoring."
                 )
         else:
             self.road_timer = 0

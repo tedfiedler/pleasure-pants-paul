@@ -23,9 +23,10 @@ from ppp.room import Room
 JOKES = [
     '"Anybody here on their honeymoon?" A pause. "Anybody here still on it?"',
     '"I got married in this town. Chapel on Fifth. Nice place. They validate parking and nothing else."',
-    '"My wife tied me to a bed once. Turns out it was the honeymoon. Turns out it was the whole marriage."',
-    '"Guy comes in here in a white leisure suit." He points. "No, seriously. Look at him. Look at him."',
-    "\"Good night, everybody! Tip your waitress, she's the only one who'll take your money and stay.\"",
+    '"My [wife|husband] tied me to a bed once. Turns out it was the honeymoon. Turns out it was the whole marriage."',
+    '"[Guy|Gal] comes in here in a white [leisure suit|pantsuit]." [He|She] points. '
+    '"No, seriously. Look at [him|her]. Look at [him|her]."',
+    "\"Good night, everybody! Tip your [waitress, she|waiter, he]'s the only one who'll take your money and stay.\"",
 ]
 
 
@@ -42,13 +43,13 @@ class Lounge(Room):
     edges = {"bottom": 22}
     spawns = {"default": (76, 150), 22: (76, 156)}
     looks = {
-        "lounge": "A comedian in a ruffled shirt and a bow tie that has seen combat. His act "
+        "lounge": "A comedian in a ruffled shirt and a bow tie that has seen combat. [His|Her] act "
         "has three jokes and a reason not to go home.",
         "stage": "A low stage with a red curtain, a stool nobody sits on, and a microphone "
         "on a stand, leaning, like everyone here.",
         "stool": "Round tables with red candles in glass, and chairs that face the stage out of politeness.",
         "floor": "Sticky. Every floor in this city is sticky, but the lounge is the champion.",
-        "bar": "A tiny bar at the back with a bartender who is also the sound man and, "
+        "bar": "A tiny bar at the back with a bartender who is also the sound [man|woman] and, "
         "later, the comedian's ride home.",
         "window": "No windows. The comedian prefers it, and the audience agrees.",
     }
@@ -88,7 +89,7 @@ class Lounge(Room):
         self.joke = 0
         game.print(
             'The comedian squints past the spotlight. "Ladies and gentlemen, we have a guest. '
-            'Sir, is that suit white, or did it give up?"'
+            "[Sir|Ma'am], is that suit white, or did it give up?\""
         )
 
     def said(self, game: Game, p: Parsed) -> bool:
@@ -105,17 +106,17 @@ class Lounge(Room):
         elif p.has("heckle") or p.said("talk", "lounge") or p.said("talk", "lounge", "rol") or p.said("talk"):
             game.award("heckle")
             game.print(
-                '"Oh, we got a talker." The comedian shades his eyes. "Sir, I don\'t come to where you '
+                '"Oh, we got a talker." The comedian shades [his|her] eyes. "[Sir|Ma\'am], I don\'t come to where you '
                 "work and knock the mop out of your hands.\" The bartender laughs. It's the first time tonight."
             )
         elif p.has("stage") and p.verb in ("enter", "climb", "use", "get"):
             game.print(
                 "You put a foot on the stage. The bartender, who is also "
-                "security, shakes his head once. You take it off."
+                "security, shakes [his|her] head once. You take it off."
             )
         elif p.said("buy", "rol") or p.said("buy"):
             game.print(
-                "The bartender is running sound. He holds up one finger. The finger means later, and it means no."
+                "The bartender is running sound. [He|She] holds up one finger. The finger means later, and it means no."
             )
         elif p.said("smell"):
             game.print("Cigarettes, spilled bourbon, and flop sweat, which has its own smell, and it's this one.")
@@ -127,12 +128,16 @@ class Lounge(Room):
 
     def _show(self, game: Game) -> None:
         if self.joke >= len(JOKES):
-            game.print("He's finished. He's packing up the one prop, which was a rubber chicken, which was you.")
+            game.print(
+                "[He|She]'s finished. [He|She]'s packing up the one prop, which was a rubber chicken, which was you."
+            )
             return
         text = JOKES[self.joke]
         self.joke += 1
         if self.joke == len(JOKES):
             game.award("lounge")
-            game.print(f"{text}\n\nHe bows to nobody. The spotlight goes out. You've seen the whole act. That was it.")
+            game.print(
+                f"{text}\n\n[He|She] bows to nobody. The spotlight goes out. You've seen the whole act. That was it."
+            )
         else:
             game.print(f"You sit. The comedian leans into the mic.\n\n{text}\n\n(SIT again for more. There is more.)")

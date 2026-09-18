@@ -55,14 +55,42 @@ DOLORES_ART = """
 ..kkkk......
 ..kkkk......
 """
+# Donny, who has the room in Pauline's game: blond by decision too, a red silk shirt open at the
+# neck, black slacks, white loafers. Same size and perch as Dolores.
+DONNY_ART = """
+....yyyy....
+...yyyyyy...
+...yffffy...
+...yfkfky...
+....ffff....
+....ffff....
+.....ff.....
+...rrffrr...
+..rrrffrrr..
+..rrrrrrrr..
+..rrrrrrrr..
+.frrrrrrrrf.
+..rrrrrrrr..
+..rrrrrrrr..
+..kkkkkkkkk.
+...kkkkkkkk.
+...kkkk.....
+...kkkk.....
+...kkkk.....
+...kkkk.....
+...kkkk.....
+...kkkk.....
+..wwww......
+..wwww......
+"""
 
 
 class Upstairs(Room):
     number = 16
     name = "Upstairs"
     description = (
-        "A small room with a big bed and a lamp with a red scarf over it. Dolores "
-        "sits on the edge of the bed, filing a nail, entirely unsurprised by you. "
+        "A small room with a big bed and a lamp with a red scarf over it. [Dolores] "
+        "sits on the edge of the bed, [filing a nail|polishing a cufflink], entirely unsurprised by you. "
         "A nightstand holds the lamp and a heart-shaped box. A window looks out on "
         "the fire escape. The stairs back down are at the bottom of the screen."
     )
@@ -70,8 +98,8 @@ class Upstairs(Room):
     edges = {"bottom": 15}
     spawns = {"default": (60, 150), 15: (60, 156)}
     looks = {
-        "hooker": "Dolores. Blonde by decision, in a red dress that has heard every line "
-        "you own. She has kind eyes and a businesslike jaw, and she is looking at your "
+        "hooker": "[Dolores]. [Blonde|Blond] by decision, in a red [dress|silk shirt] that has heard every line "
+        "you own. [She|He] has kind eyes and a businesslike jaw, and [she|he] is looking at your "
         "suit the way a vet looks at a limp.",
         "bed": "A brass bed with a chenille spread and a great deal of history. It sags "
         "in the middle, philosophically.",
@@ -86,12 +114,12 @@ class Upstairs(Room):
         "floor": "Boards, the rug, and one slipper. Only one.",
         "wall": "Wallpaper with roses on it. The roses are winning.",
         "heart": "There are hearts on everything in here. It's a theme, or a warning.",
-        "money": "You count your cash. Dolores counts it too, faster.",
+        "money": "You count your cash. [Dolores] counts it too, faster.",
         "rose": "A wilted rose. In this room it is practically a bouquet.",
     }
 
     def __init__(self) -> None:
-        self._dolores: pygame.Surface | None = None
+        self._dolores: dict[bool, pygame.Surface] = {}  # by version of the game
 
     def draw(self, pic: Picture) -> None:
         pic.rect(0, 0, PIC_W, 100, LMAGENTA)  # rosy wallpaper
@@ -134,23 +162,23 @@ class Upstairs(Room):
         pic.rect(64, 100, 22, 4, None, 0)  # nightstand footprint
         pic.walls(100)
 
-    def dolores(self) -> pygame.Surface:
-        if self._dolores is None:
-            self._dolores = from_ascii(DOLORES_ART, DOLORES_LEGEND)
-        return self._dolores
+    def dolores(self, pauline: bool = False) -> pygame.Surface:
+        if pauline not in self._dolores:
+            self._dolores[pauline] = from_ascii(DONNY_ART if pauline else DOLORES_ART, DOLORES_LEGEND)
+        return self._dolores[pauline]
 
     def objects(self, game: Game) -> list[tuple[pygame.Surface, int, int]]:
         if game.flags.get("dolores_done"):
             return []
-        return [(self.dolores(), DOLORES_X, DOLORES_BASE)]
+        return [(self.dolores(game.pauline), DOLORES_X, DOLORES_BASE)]
 
     def enter(self, game: Game, from_room: int | None) -> None:
         super().enter(game, from_room)
         if not game.flags.get("seen_upstairs"):
             game.flags["seen_upstairs"] = True
             game.print(
-                'Dolores looks up from her nail file. "Well," she says, taking in the suit, '
-                "\"somebody's dressed for it.\" She pats the bed. She does not smile. It's "
+                '[Dolores] looks up from [her nail file|his cufflink]. "Well," [she|he] says, taking in the suit, '
+                "\"somebody's dressed for it.\" [She|He] pats the bed. [She|He] does not smile. It's "
                 "thirty dollars, the pat says."
             )
 
@@ -199,25 +227,28 @@ class Upstairs(Room):
             game.print(self.looks["hooker"])
         elif p.said("kiss", "self"):
             game.print(
-                'Dolores watches you try. "Honey," she says, "that\'s the saddest thing '
+                '[Dolores] watches you try. "Honey," [she|he] says, "that\'s the saddest thing '
                 "I've seen today, and I've seen the suit.\""
             )
         elif p.said("smell"):
-            game.print("Perfume, cigarettes, and something floral that turns out to be the wallpaper.")
+            game.print("[Perfume|Cologne], cigarettes, and something floral that turns out to be the wallpaper.")
         elif p.said("listen"):
-            game.print("Downstairs, a crowd roars at a boxing match. Up here, a nail file, patient as the sea.")
+            game.print(
+                "Downstairs, a crowd roars at a boxing match. Up here, "
+                "a [nail file|polishing cloth], patient as the sea."
+            )
         else:
             return False
         return True
 
     def _talk(self, game: Game) -> None:
         if game.flags.get("dolores_done"):
-            game.print("Dolores has gone to freshen up. You are alone with the wallpaper.")
+            game.print("[Dolores] has gone to freshen up. You are alone with the wallpaper.")
         elif game.flags.get("dolores_paid"):
             game.print("\"Paid is paid, honey. The clock's running. The bed's right here.\"")
         elif game.flags.get("rose_given"):
             game.print(
-                '"You\'re sweet," says Dolores, tucking the rose behind her ear. "Sweet\'s '
+                '"You\'re sweet," says [Dolores], tucking the rose behind [her|his] ear. "Sweet\'s '
                 "still thirty dollars, but I'll think fondly of you. Have a chocolate.\""
             )
         else:
@@ -227,17 +258,19 @@ class Upstairs(Room):
         if not game.has("rose"):
             game.print("You'd need a rose. Or anything. Anything at all would be a start.")
         elif not self._near_dolores(game):
-            game.print("Walk over to her. Flowers thrown from across a room count as littering.")
+            game.print("Walk over to [her|him]. Flowers thrown from across a room count as littering.")
         elif game.flags.get("dolores_done"):
-            game.print("She's gone. You lay the rose on the pillow, which is the most romantic thing you will ever do.")
+            game.print(
+                "[She's|He's] gone. You lay the rose on the pillow, which is the most romantic thing you will ever do."
+            )
         else:
             game.take("rose")
             game.flags["rose_given"] = True
             game.award("give_rose")
             game.print(
-                "Dolores takes the wilted rose and looks at it for a long moment. \"Nobody's "
-                'given me a flower since the Carter administration." She tucks it behind '
-                'her ear. "Have a chocolate, honey. Just the one."'
+                "[Dolores] takes the wilted rose and looks at it for a long moment. \"Nobody's "
+                'given me a flower since the Carter administration." [She|He] tucks it behind '
+                '[her|his] ear. "Have a chocolate, honey. Just the one."'
             )
 
     def _get_candy(self, game: Game) -> None:
@@ -248,28 +281,28 @@ class Upstairs(Room):
         elif not self._near_stand(game):
             game.print("They're on the nightstand. Walk over there.")
         elif not (game.flags.get("rose_given") or game.flags.get("dolores_done")):
-            game.print('"Those are mine." Dolores doesn\'t look up from her nail. "Hands, sugar."')
+            game.print('"Those are mine." [Dolores] doesn\'t look up from [her nail|his cufflink]. "Hands, sugar."')
         else:
             game.give("candy")
             game.award("candy")
             game.print(
-                "You take the heart-shaped box, lid and all. Somewhere out there is a woman "
+                "You take the heart-shaped box, lid and all. Somewhere out there is a [woman|man] "
                 "who will be impressed by chocolates from a stranger. Statistically."
             )
 
     def _pay(self, game: Game) -> None:
         money = game.vars.get("money", 0)
         if not self._near_dolores(game):
-            game.print("Walk over to her. She doesn't do curbside.")
+            game.print("Walk over to [her|him]. [She|He] doesn't do curbside.")
         elif game.flags.get("dolores_paid"):
             game.print('"You paid, honey. I remember. I remember everything, it\'s a curse."')
         elif money < PRICE:
-            game.print(f'You have ${money}. "That\'s adorable," says Dolores. "Come back with thirty."')
+            game.print(f'You have ${money}. "That\'s adorable," says [Dolores]. "Come back with thirty."')
         else:
             game.vars["money"] = money - PRICE
             game.flags["dolores_paid"] = True
             game.print(
-                f"You hand over ${PRICE}. Dolores counts it twice, folds it into somewhere, "
+                f"You hand over ${PRICE}. [Dolores] counts it twice, folds it into somewhere, "
                 f'and stands. "All right, tiger." You have ${game.vars["money"]} left, and '
                 "about four minutes."
             )
@@ -280,24 +313,27 @@ class Upstairs(Room):
         elif not self._near_dolores(game):
             game.print("From over there? Ambitious. Walk closer.")
         elif not game.flags.get("dolores_paid"):
-            game.print('Dolores holds up one hand. "Business first, sugar. Thirty dollars."')
+            game.print('[Dolores] holds up one hand. "Business first, sugar. Thirty dollars."')
         else:
             game.flags["dolores_done"] = True
             game.ego.visible = False
-            game.print("Dolores turns off the lamp. The screen goes discreetly, mercifully dark.")
-            game.print("Some time passes. Not much, if we're honest. Dolores is very professional about it.")
-            game.print('The lamp comes back on. Dolores is already filing a nail. "Thanks, tiger. Mind the stairs."')
+            game.print("[Dolores] turns off the lamp. The screen goes discreetly, mercifully dark.")
+            game.print("Some time passes. Not much, if we're honest. [Dolores] is very professional about it.")
+            game.print(
+                "The lamp comes back on. [Dolores] is already [filing a nail|polishing a cufflink]. "
+                '"Thanks, tiger. Mind the stairs."'
+            )
             if game.has("protection"):
                 game.take("protection")
                 game.award("dolores")
                 game.print(
-                    "You get dressed, mostly in the right order. You feel like a new man, "
+                    "You get dressed, mostly in the right order. You feel like a new [man|woman], "
                     "which is a low bar you have nonetheless cleared."
                 )
                 game.ego.visible = True
             else:
                 game.die(
-                    "A day later, a rash. A week later, a doctor with a pamphlet. Paul dies of "
+                    "A day later, a rash. A week later, a doctor with a pamphlet. [Paul] dies of "
                     "something with a Latin name, unprotected and unrepentant. Next time, "
                     "shop first."
                 )

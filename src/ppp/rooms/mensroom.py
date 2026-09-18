@@ -1,4 +1,7 @@
-"""Room 14: the men's room at Rooster's. Read the wall; one line matters."""
+"""Room 14: the men's room at Rooster's. Read the wall; one line matters.
+
+In Pauline's game it is the ladies' room, and the urinal is a dispenser that has been empty for years.
+"""
 
 from __future__ import annotations
 
@@ -24,11 +27,11 @@ from ppp.room import Room
 
 GRAFFITI: list[str] = [
     "For a good time call anyone. Anyone at all. Please.",
-    "Paul was here. Twice. It went badly both times.",
+    "[Paul] was here. Twice. It went badly both times.",
     "The back door password is ROOSTER SENT ME. Tell them Rooster sent you. -R.",
     "Kilroy was here and would like to go home now.",
     "Flush twice. It's a long way to the kitchen.",
-    "If you can read this you're standing too close to the urinal.",
+    "If you can read this you're standing too close to the [urinal|dispenser].",
 ]
 PASSWORD_LINE = 2
 
@@ -37,8 +40,9 @@ class MensRoom(Room):
     number = 14
     name = "The men's room"
     description = (
-        "A men's room in the tradition of great men's rooms: one stall with no door, "
-        "a urinal with a cigarette in it, a sink under a mirror that has given up, "
+        "[A men's room in the tradition of great men's rooms|A ladies' room in the tradition of great ladies' rooms]: "
+        "one stall with no door, [a urinal with a cigarette in it|a dispenser with a cigarette in its coin slot], "
+        "a sink under a mirror that has given up, "
         "and a wall of graffiti that would take a week to read. The way out is at the "
         "bottom of the screen."
     )
@@ -49,14 +53,15 @@ class MensRoom(Room):
         "wall": "Every inch is written on. You could read the graffiti for hours. Try READ GRAFFITI.",
         "sink": "A cracked sink with one tap, a sliver of grey soap, and a drain that gurgles "
         "when you aren't looking at it.",
-        "mirror": "The mirror is mostly scratches. What's left shows a man in a white suit "
-        "who should know better. You wave. He waves back, reluctantly.",
+        "mirror": "The mirror is mostly scratches. What's left shows [a man|a woman] in a white suit "
+        "who should know better. You wave. [He|She] waves back, reluctantly.",
         "bathroom": "The stall has no door. The toilet has no seat. The situation has no upside.",
         "stool": "The stall has no door. The toilet has no seat. The situation has no upside.",
         "floor": "Sticky tiles. You are choosing not to think about why.",
         "door": "The way out. It's behind you, at the bottom of the screen.",
-        "urinal": "A urinal. Someone has stubbed out a cigarette in it, which is at least tidy.",
-        "cigarette": "A cigarette butt, in the urinal, which is where cigarettes go to think.",
+        "urinal": "[A urinal. Someone has stubbed out a cigarette in it|A dispenser, empty since 1979. "
+        "Someone has stubbed out a cigarette in its coin slot], which is at least tidy.",
+        "cigarette": "A cigarette butt, in the [urinal|dispenser's coin slot], which is where cigarettes go to think.",
         "soap": "A sliver of grey soap that has washed hands you don't want to know about.",
         "window": "No window. The room prefers it.",
     }
@@ -83,11 +88,19 @@ class MensRoom(Room):
         pic.rect(14, 74, 24, 14, WHITE)  # toilet
         pic.rect(18, 62, 16, 14, WHITE)  # tank
         pic.rect(16, 88, 20, 8, WHITE)
-        # urinal in the middle
-        pic.rect(66, 50, 18, 34, WHITE, 0)
-        pic.rect(68, 52, 14, 22, LGREY)
-        pic.rect(72, 46, 6, 6, DGREY)  # flush pipe
-        pic.pixel(74, 70, BROWN)  # the cigarette
+        if pic.pauline:
+            # a wall dispenser in the middle, long since empty
+            pic.rect(66, 50, 18, 34, LGREY, 0)
+            pic.rect(68, 52, 14, 8, WHITE)  # a label nobody has read
+            pic.rect(68, 62, 14, 14, DGREY)  # the window, showing nothing
+            pic.rect(72, 78, 6, 3, BLACK)  # coin slot
+            pic.pixel(74, 78, BROWN)  # the cigarette
+        else:
+            # urinal in the middle
+            pic.rect(66, 50, 18, 34, WHITE, 0)
+            pic.rect(68, 52, 14, 22, LGREY)
+            pic.rect(72, 46, 6, 6, DGREY)  # flush pipe
+            pic.pixel(74, 70, BROWN)  # the cigarette
         # sink and mirror on the right
         pic.rect(112, 26, 34, 30, LGREY)  # mirror
         pic.rect(114, 28, 30, 26, DGREY)
@@ -126,6 +139,8 @@ class MensRoom(Room):
         reads_wall = p.said("look", "graffiti") or p.said("look", "wall", "rol") or p.said("look", "graffiti", "rol")
         if reads_wall or p.said("look", "writing") or p.said("look", "wall") and self.line:
             self._read(game)
+        elif game.pauline and p.said("use", "urinal"):
+            game.print("You feed it a quarter, out of habit. It keeps the quarter, also out of habit.")
         elif p.has("bathroom", "urinal") and p.verb in ("use", "sit") or p.said("sit"):
             game.award("toilet")
             game.print(
@@ -143,11 +158,11 @@ class MensRoom(Room):
         elif p.said("get", "soap"):
             game.print("You leave the soap. Some things belong to the room.")
         elif p.said("get", "cigarette"):
-            game.print("It's in a urinal, Paul. Even you have a floor, and that's it.")
+            game.print("It's in a [urinal|coin slot in a ladies' room], [Paul]. Even you have a floor, and that's it.")
         elif p.said("drink", "rol"):
             game.die(
-                "You drink from the sink. Then, because it's there, from the urinal. "
-                "The city health department later names a pathogen after you. Paul dies "
+                "You drink from the sink. Then, because it's there, from the [urinal|toilet]. "
+                "The city health department later names a pathogen after you. [Paul] dies "
                 "of curiosity, and of many, many other things."
             )
         elif p.said("kiss", "mirror"):

@@ -54,6 +54,31 @@ BRICK_SITTING = """
 kkkkk.........kkkkk.
 kkkkk.........kkkkk.
 """
+# Roxy, who holds the couch in Pauline's game: the same build and the same pink, under a lot of black hair
+ROXY_SITTING = """
+....kkkkkkk.........
+...kkkkkkkkk........
+...ffffffkkk........
+...fkffffkkk........
+...fffffgkkk........
+....fffffkkk........
+.....fff.kkk........
+..sssgsssssss.......
+.ssssssssssssss.....
+.ssssssssssssss.....
+.sssssssssssssss....
+.sssssssssssssss....
+.fsssssssssssssss...
+.ssssssssssssssss...
+..jjjjjjjjjjjjjjjj..
+..jjjjjjjjjjjjjjjj..
+.jjjj.........jjjj..
+.jjjj.........jjjj..
+.jjjj.........jjjj..
+.jjjj.........jjjj..
+kkkkk.........kkkkk.
+kkkkk.........kkkkk.
+"""
 
 SCREEN_LEGEND = {"b": LBLUE, "g": GREEN, "w": WHITE, "k": BLACK, "r": RED, "f": LRED, "y": YELLOW, "l": LGREY}
 FISHING = (
@@ -108,7 +133,7 @@ class BackRoom(Room):
     description = (
         "A back room that is mostly couch. A television flickers on a milk crate. "
         "A staircase climbs the back wall toward somewhere with better lighting. "
-        "Between you and the stairs, filling the couch, sits a man called Brick, "
+        "Between you and the stairs, filling the couch, sits [a man|a woman] called [Brick], "
         "watching a show about fishing with the concentration of a surgeon. The "
         "alley is back the way you came, at the bottom of the screen."
     )
@@ -116,16 +141,16 @@ class BackRoom(Room):
     edges = {"bottom": 12}
     spawns = {"default": (104, 150), 12: (104, 156), 16: (STAIRS_X[0] + 8, 104)}
     looks = {
-        "bouncer": "Brick. Six and a half feet of bouncer folded onto a couch, in a pink "
-        "shirt that nobody has ever laughed at twice. He is watching the fishing show "
-        "the way other men watch their children being born.",
-        "tv": "A television older than you, on a milk crate. A man in waders is "
-        "holding up a fish. Brick nods slowly, as if he knew the fish.",
-        "couch": "A couch the colour of a bruise, built around Brick. There is room for "
+        "bouncer": "[Brick]. Six and a half feet of bouncer folded onto a couch, in a pink "
+        "[shirt|blouse] that nobody has ever laughed at twice. [He|She] is watching the fishing show "
+        "the way other [men|women] watch their children [being born|graduate].",
+        "tv": "A television older than you, on a milk crate. [A man|A woman] in waders is "
+        "holding up a fish. [Brick] nods slowly, as if [he|she] knew the fish.",
+        "couch": "A couch the colour of a bruise, built around [Brick]. There is room for "
         "one more person, if that person were much smaller and much braver.",
         "crate": "A milk crate doing the work of a TV stand. Somewhere a dairy is missing it.",
         "stairs": "Steep wooden stairs up the back wall. Music, laughter, and a smell "
-        "of perfume drift down. Everything you came for is up there. Brick is down here.",
+        "of [perfume|aftershave] drift down. Everything you came for is up there. [Brick] is down here.",
         "floor": "Bare boards, a rug that has given up, and cigarette burns arranged like constellations.",
         "wall": "Wood panelling and a calendar from a tyre company, still on the month with the best picture.",
         "door": "The alley door is behind you, at the bottom of the screen.",
@@ -134,7 +159,7 @@ class BackRoom(Room):
     }
 
     def __init__(self) -> None:
-        self._brick: list[pygame.Surface] = []
+        self._brick: dict[bool, list[pygame.Surface]] = {}  # by version of the game
         self._screens: dict[str, list[pygame.Surface]] = {}
 
     def draw(self, pic: Picture) -> None:
@@ -180,12 +205,12 @@ class BackRoom(Room):
 
     # -- sprites -----------------------------------------------------------------
 
-    def brick_frames(self) -> list[pygame.Surface]:
-        if not self._brick:
-            rows = rows_of(BRICK_SITTING)
+    def brick_frames(self, pauline: bool = False) -> list[pygame.Surface]:
+        if pauline not in self._brick:
+            rows = rows_of(ROXY_SITTING if pauline else BRICK_SITTING)
             lean = [(r[2:] + "..") if i < 7 else r for i, r in enumerate(rows)]  # head forward
-            self._brick = [from_rows(rows, BRICK_LEGEND), from_rows(lean, BRICK_LEGEND)]
-        return self._brick
+            self._brick[pauline] = [from_rows(rows, BRICK_LEGEND), from_rows(lean, BRICK_LEGEND)]
+        return self._brick[pauline]
 
     def screen_frames(self, show: str) -> list[pygame.Surface]:
         if show not in self._screens:
@@ -196,7 +221,7 @@ class BackRoom(Room):
         distracted = bool(game.flags.get("brick_distracted"))
         flicker = (game.cycle_count // 6) % 2
         screen = self.screen_frames("boxing" if distracted else "fishing")[flicker]
-        brick = self.brick_frames()[1 if distracted else 0]
+        brick = self.brick_frames(game.pauline)[1 if distracted else 0]
         return [
             (screen, TV_X, TV_Y + screen.get_height() - 1),
             (brick, BRICK_X, BRICK_BASE),
@@ -209,7 +234,7 @@ class BackRoom(Room):
         if not game.flags.get("seen_backroom"):
             game.flags["seen_backroom"] = True
             game.print(
-                "Brick doesn't look up. \"You're in the way of the fish,\" he says. You "
+                "[Brick] doesn't look up. \"You're in the way of the fish,\" [he|she] says. You "
                 "step aside. You were not, in fact, in the way of the fish."
             )
 
@@ -230,18 +255,18 @@ class BackRoom(Room):
             self._remote(game)
         elif p.said("use", "tv") or p.said("push", "tv") or p.said("open", "tv"):
             if game.flags.get("brick_distracted"):
-                game.print("Leave it. It's on the right channel now, and Brick agrees.")
+                game.print("Leave it. It's on the right channel now, and [Brick] agrees.")
             else:
                 game.print(
-                    "You reach for the dial. Brick's hand closes over your wrist without "
-                    "his eyes leaving the screen. \"Don't.\" You don't."
+                    "You reach for the dial. [Brick]'s hand closes over your wrist without "
+                    "[his|her] eyes leaving the screen. \"Don't.\" You don't."
                 )
         elif p.said("talk", "bouncer") or p.said("talk", "bouncer", "rol") or p.said("talk"):
             game.award("talk_brick")
             if game.flags.get("brick_distracted"):
-                game.print('"Shh. Third round." He does not blink. He may never blink again.')
+                game.print('"Shh. Third round." [He|She] does not blink. [He|She] may never blink again.')
             else:
-                game.print('"Fish," says Brick, by way of conversation. It is the whole conversation.')
+                game.print('"Fish," says [Brick], by way of conversation. It is the whole conversation.')
         elif (
             p.said("enter", "stairs")
             or p.said("enter", "stairs", "rol")
@@ -251,11 +276,11 @@ class BackRoom(Room):
             if near_stairs:
                 self._try_stairs(game)
             else:
-                game.print("Walk over to the stairs first. They're on the right, past the couch, past Brick.")
+                game.print("Walk over to the stairs first. They're on the right, past the couch, past [Brick].")
         elif p.said("sit", "rol") or p.said("sit"):
-            game.print('"That\'s my spot," says Brick. It is all his spot.')
+            game.print('"That\'s my spot," says [Brick]. It is all [his|her] spot.')
         elif p.said("give", "rol") and p.has("bouncer"):
-            game.print("Brick looks at your offering, then at you, then back at the fish. The fish wins.")
+            game.print("[Brick] looks at your offering, then at you, then back at the fish. The fish wins.")
         elif (
             p.said("kiss", "bouncer")
             or p.said("push", "bouncer")
@@ -263,39 +288,43 @@ class BackRoom(Room):
             or p.said("get", "bouncer")
         ):
             game.die(
-                "Brick stands up. This takes a while. Then he removes you from the couch, "
-                "the room, the building, and, on reflection, the world. Paul is a rumour."
+                "[Brick] stands up. This takes a while. Then [he|she] removes you from the couch, "
+                "the room, the building, and, on reflection, the world. [Paul] is a rumour."
             )
         elif p.said("get", "tv") or p.said("get", "crate"):
-            game.print("It's heavier than it looks, and it looks like a television. Also, Brick.")
+            game.print("It's heavier than it looks, and it looks like a television. Also, [Brick].")
         elif p.said("look", "channel") or p.said("look", "tv", "rol") or p.said("look", "tv"):
             game.award("watch_tv")
             game.print(
                 self.looks["tv"]
                 if not game.flags.get("brick_distracted")
-                else "Two large men are hitting each other. Brick approves of both."
+                else "Two large [men|women] are hitting each other. [Brick] approves of both."
             )
         elif p.said("smell"):
-            game.print("Cigarettes, cheap aftershave, and a fish smell that may be coming from the television.")
+            game.print(
+                "Cigarettes, cheap [aftershave|perfume], and a fish smell that may be coming from the television."
+            )
         elif p.said("listen"):
-            game.print("A man on TV explaining lures. Brick breathing. Upstairs, faintly, music and laughter.")
+            game.print(
+                "[A man|A woman] on TV explaining lures. [Brick] breathing. Upstairs, faintly, music and laughter."
+            )
         else:
             return False
         return True
 
     def _remote(self, game: Game) -> None:
         if not game.has("remote"):
-            game.print("You mime a remote control. Brick, without looking, mimes not caring.")
+            game.print("You mime a remote control. [Brick], without looking, mimes not caring.")
             return
         if game.flags.get("brick_distracted"):
-            game.print("The boxing is on. Brick is gone to a better place. Don't push your luck, or the button.")
+            game.print("The boxing is on. [Brick] is gone to a better place. Don't push your luck, or the button.")
             return
         game.flags["brick_distracted"] = True
         game.award("distract_brick")
         game.print(
-            "You aim the remote over Brick's shoulder and press CHANNEL. The fish vanishes. "
-            "Two enormous men in shorts appear, hitting each other. Brick leans forward "
-            "until the couch creaks. He is no longer in this room. He is ringside."
+            "You aim the remote over [Brick]'s shoulder and press CHANNEL. The fish vanishes. "
+            "Two enormous [men|women] in shorts appear, hitting each other. [Brick] leans forward "
+            "until the couch creaks. [He|She] is no longer in this room. [He|She] is ringside."
         )
 
     def _try_stairs(self, game: Game) -> None:
@@ -305,8 +334,8 @@ class BackRoom(Room):
             game.new_room(16)
         else:
             game.print(
-                "Brick's arm comes out sideways like a railway barrier. \"Where you going, "
-                'tiger?" He stands, lifts you by the lapels, and posts you back through the '
+                "[Brick]'s arm comes out sideways like a railway barrier. \"Where you going, "
+                '[tiger|princess]?" [He|She] stands, lifts you by the lapels, and posts you back through the '
                 "alley door like a letter nobody wanted."
             )
             game.new_room(12)

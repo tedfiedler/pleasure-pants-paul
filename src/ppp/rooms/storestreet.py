@@ -49,8 +49,8 @@ class StoreStreet(Room):
         "who has seen you coming since the cab.",
         "door": "Glass doors with a bell. Walk up and they'll open; they open for anyone.",
         "phone": "A pay phone on a post. The receiver is on the hook, which around here counts as a miracle.",
-        "newspaper": "A newspaper box. The headline is about a man who did something "
-        "foolish in a leisure suit. Not you. Not yet.",
+        "newspaper": "A newspaper box. The headline is about a [man|woman] who did something "
+        "foolish in a [leisure suit|pantsuit]. Not you. Not yet.",
         "floor": "Clean sidewalk. Somebody sweeps here. Imagine.",
         "alley": "No alley here. This street is too respectable, which is to say it has a working streetlight.",
     }

@@ -74,14 +74,14 @@ class Curb:
 
     def call(self, game: Game) -> None:
         if self.state == "waiting":
-            game.print("It's right there, Paul. Yellow, four wheels, hard to miss.")
+            game.print("It's right there, [Paul]. Yellow, four wheels, hard to miss.")
         elif self.state == "arriving":
             game.print("Patience. It's coming as fast as the meter allows.")
         else:
             self.state = "arriving"
             self.x = PIC_W
             game.award("call_cab")
-            game.print("You wave your arms like a man drowning in polyester. A cab peels around the corner.")
+            game.print("You wave your arms like a [man|woman] drowning in polyester. A cab peels around the corner.")
 
     def board(self, game: Game) -> None:
         if self.state == "waiting" and not self.near(game):

@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
-from ppp.words import ANY, IGNORE, LOOKUP, ROL
+from ppp.words import ANY, IGNORE, ROL, lookup
 
 _token_re = re.compile(r"[a-z0-9']+")
 
@@ -44,8 +44,9 @@ class Parsed:
         return not self.words and self.unknown is None
 
 
-def parse(text: str) -> Parsed:
+def parse(text: str, pauline: bool = False) -> Parsed:
     out = Parsed()
+    table = lookup(pauline)
     for tok in _token_re.findall(text.lower()):
         tok = tok.removesuffix("'s")  # rooster's -> rooster
         if tok in IGNORE:
@@ -56,7 +57,7 @@ def parse(text: str) -> Parsed:
             out.words.append("number")
             out.raw.append(tok)
             continue
-        group = LOOKUP.get(tok)
+        group = table.get(tok)
         if group is None:
             if out.unknown is None:
                 out.unknown = tok

@@ -24,7 +24,7 @@ from ppp.game import Game
 from ppp.parser import Parsed
 from ppp.pic import Picture
 from ppp.room import Room
-from ppp.rooms.disco import GINGER_ART, GINGER_LEGEND
+from ppp.rooms.disco import GINGER_LEGEND, ginger_art
 from ppp.sprite import from_ascii
 
 BED = (72, 62, 80, 46)  # x, y, w, h
@@ -39,6 +39,15 @@ TIED_ART = """
 .hkfff.wwwrwwwwrwwwwrwwwwbbb.
 ..ffff.wwwrwwwwrwwwwrwwww.bb.
 ..ffff.wwwwwwwwwwwwwwwwww.bb.
+"""
+# Pauline in the same fix: the big hair on the pillow, a flash of pink blouse, red heels
+PAULINE_TIED_LEGEND = {**TIED_LEGEND, "p": LMAGENTA, "b": RED}
+PAULINE_TIED_ART = """
+.hhfff.wwwwwwwwwwwwwwwwww.bb.
+hhhfff.pwwrwwwwrwwwwrwwww.bb.
+hhhkff.pwwrwwwwrwwwwrwwwwbbb.
+hhhfff.pwwrwwwwrwwwwrwwww.bb.
+.hhfff.wwwwwwwwwwwwwwwwww.bb.
 """
 
 
@@ -56,7 +65,7 @@ class Penthouse(Room):
     edges = {"bottom": 22}
     spawns = {"default": (76, 150), 22: (76, 156)}
     looks = {
-        "hooker": "Ginger, on the bed, shoes off, veil gone, holding two glasses. Your wife. "
+        "hooker": "[Ginger], on the bed, shoes off, [veil|jacket] gone, holding two glasses. Your [wife|husband]. "
         "The word still doesn't fit in your mouth.",
         "bed": "A heart-shaped bed with satin sheets and more pillows than a person needs. "
         "It has seen honeymoons, and it has seen what comes after.",
@@ -74,13 +83,13 @@ class Penthouse(Room):
         "key": "The penthouse key, heart-shaped fob and all. You won't have it long.",
         "elevator": "The elevator, at the bottom of the screen. It goes down. Everything does, eventually.",
         "rope": "The chapel's bell rope, or one like it, in a great many knots, around you.",
-        "self": "You are Paul, tied to a heart-shaped bed with a bell rope by your wife of "
+        "self": "You are [Paul], tied to a heart-shaped bed with a bell rope by your [wife|husband] of "
         "one hour. Even for you this is a new low, and you have a basement.",
     }
 
     def __init__(self) -> None:
-        self._ginger: pygame.Surface | None = None
-        self._tied: pygame.Surface | None = None
+        self._ginger: dict[bool, pygame.Surface] = {}  # keyed by game.pauline
+        self._tied: dict[bool, pygame.Surface] = {}
         self.maid_timer = 0
 
     def draw(self, pic: Picture) -> None:
@@ -128,22 +137,23 @@ class Penthouse(Room):
 
     # -- sprites -------------------------------------------------------------------
 
-    def ginger(self) -> pygame.Surface:
-        if self._ginger is None:
-            self._ginger = from_ascii(GINGER_ART, GINGER_LEGEND)
-        return self._ginger
+    def ginger(self, pauline: bool = False) -> pygame.Surface:
+        if pauline not in self._ginger:
+            self._ginger[pauline] = from_ascii(ginger_art(pauline)[0], GINGER_LEGEND)
+        return self._ginger[pauline]
 
-    def tied(self) -> pygame.Surface:
-        if self._tied is None:
-            self._tied = from_ascii(TIED_ART, TIED_LEGEND)
-        return self._tied
+    def tied(self, pauline: bool = False) -> pygame.Surface:
+        if pauline not in self._tied:
+            art, legend = (PAULINE_TIED_ART, PAULINE_TIED_LEGEND) if pauline else (TIED_ART, TIED_LEGEND)
+            self._tied[pauline] = from_ascii(art, legend)
+        return self._tied[pauline]
 
     def objects(self, game: Game) -> list[tuple[pygame.Surface, int, int]]:
         if game.flags.get("tied_up"):
-            return [(self.tied(), TIED_POS[0], TIED_POS[1])]
+            return [(self.tied(game.pauline), TIED_POS[0], TIED_POS[1])]
         if game.flags.get("honeymoon_done"):
             return []
-        return [(self.ginger(), GINGER_POS[0], GINGER_POS[1])]
+        return [(self.ginger(game.pauline), GINGER_POS[0], GINGER_POS[1])]
 
     # -- logic ---------------------------------------------------------------------
 
@@ -151,11 +161,11 @@ class Penthouse(Room):
         super().enter(game, from_room)
         self.maid_timer = 0
         if game.flags.get("honeymoon_done"):
-            game.print("The penthouse, after. The bed is stripped, the champagne is gone, and so is she.")
+            game.print("The penthouse, after. The bed is stripped, the champagne is gone, and so is [she|he].")
         else:
             game.print(
-                'Ginger is on the bed with two glasses. "Husband," she says, trying the word out. '
-                '"Come here. Bring the wallet; I want to see what I married." She laughs. You laugh. '
+                '[Ginger] is on the bed with two glasses. "[Husband|Wife]," [she|he] says, trying the word out. '
+                '"Come here. Bring the wallet; I want to see what I married." [She|He] laughs. You laugh. '
                 "One of you means it."
             )
 
@@ -172,18 +182,19 @@ class Penthouse(Room):
             self._honeymoon(game)
         elif p.said("talk", "hooker") or p.said("talk", "hooker", "rol") or p.said("talk"):
             if game.flags.get("honeymoon_done"):
-                game.print("Nobody to talk to. The note on the nightstand says everything she had to say.")
+                game.print("Nobody to talk to. The note on the nightstand says everything [she|he] had to say.")
             else:
                 game.print(
-                    '"Less talking, husband." She pats the bed, the way Dolores did. You notice. You come anyway.'
+                    '"Less talking, [husband|wife]." [She|He] pats the bed, the way [Dolores] did. '
+                    "You notice. You come anyway."
                 )
         elif p.said("drink", "champagne") or p.said("get", "champagne") or p.said("open", "champagne"):
             if game.flags.get("honeymoon_done"):
-                game.print("The bottle's gone. She took it. Of course she took it.")
+                game.print("The bottle's gone. [She|He] took it. Of course [she|he] took it.")
             else:
                 game.award("champagne")
                 game.print(
-                    'You pop the cork. It hits the window. "Careful," says Ginger, '
+                    'You pop the cork. It hits the window. "Careful," says [Ginger], '
                     "\"that's the only thing in here that's paid for.\""
                 )
         elif p.said("look", "note") or p.said("look", "note", "rol") or p.said("get", "note"):
@@ -192,9 +203,10 @@ class Penthouse(Room):
                     game.vars["money"] = game.vars.get("money", 0) + 10
                 game.award("note")
                 game.print(
-                    "The note, in lipstick on hotel stationery: \"Sugar. It was fun. The ring's real; "
-                    "the rest wasn't. Don't call. G. P.S. I took the key so you'd take the stairs. "
-                    "P.P.S. Ten bucks for a cab. A girl isn't a monster.\" A ten is folded inside."
+                    "The note, in [lipstick|your lipstick] on hotel stationery: "
+                    "\"Sugar. It was fun. The ring's real; "
+                    "the rest wasn't. Don't call. [G|R]. P.S. I took the key so you'd take the stairs. "
+                    "P.P.S. Ten bucks for a cab. A [girl|guy] isn't a monster.\" A ten is folded inside."
                 )
             elif game.flags.get("honeymoon_done"):
                 game.print("There's a note on the nightstand. You'll read it when your hands are free.")
@@ -204,7 +216,7 @@ class Penthouse(Room):
             game.die(
                 "The balcony door opens. The night air is wonderful. The rail is lower than it "
                 "looks, the pool is closed for the season, and the city is beautiful from up "
-                "here for about four seconds. Paul checks out early."
+                "here for about four seconds. [Paul] checks out early."
             )
         elif p.has("phone") and p.verb in ("use", "call", "get", "push"):
             game.print('You lift the gold phone. "Desk," says a voice. You have nothing to ask for. Yet.')
@@ -212,17 +224,17 @@ class Penthouse(Room):
             if game.flags.get("freed"):
                 game.award("ceiling_mirror")
                 game.print(
-                    "There's a mirror on the ceiling. You look up. A tired man in a damp suit looks down. "
+                    "There's a mirror on the ceiling. You look up. A tired [man|woman] in a damp suit looks down. "
                     "You nod to each other."
                 )
             else:
                 game.print("A mirror on the ceiling. You'll have plenty of time to study it. More than you'd like.")
         elif p.said("sit", "rol") or p.said("sit"):
-            game.print("You sit on the bed. It sighs. So does Ginger, differently.")
+            game.print("You sit on the bed. It sighs. So does [Ginger], differently.")
         elif p.said("smell"):
-            game.print("Champagne, perfume, and satin that's been steamed by a professional.")
+            game.print("Champagne, [perfume|cologne], and satin that's been steamed by a professional.")
         elif p.said("listen"):
-            game.print("The city, faintly. Ice settling in the bucket. Ginger, humming the wedding march wrong.")
+            game.print("The city, faintly. Ice settling in the bucket. [Ginger], humming the wedding march wrong.")
         else:
             return False
         return True
@@ -232,7 +244,7 @@ class Penthouse(Room):
             game.print("The bed is stripped and the moment has left the building, in a cab, with your money.")
             return
         if not self.near(game, 70, 156, 120):
-            game.print("She's on the bed. Get over there; the carpet's doing its best to stop you.")
+            game.print("[She|He]'s on the bed. Get over there; the carpet's doing its best to stop you.")
             return
         game.flags["honeymoon_done"] = True
         game.flags["tied_up"] = True
@@ -243,15 +255,15 @@ class Penthouse(Room):
         sound.play("robbed")
         game.ego.visible = False
         game.ego.frozen = True
-        game.print("Ginger turns off the lamp. The city glitters. The screen, once again, does the decent thing.")
+        game.print("[Ginger] turns off the lamp. The city glitters. The screen, once again, does the decent thing.")
         game.print(
-            '"Hold still, sugar," she says, in the dark, "I\'ve got a surprise." Something soft and '
+            '"Hold still, sugar," [she|he] says, in the dark, "I\'ve got a surprise." Something soft and '
             "ropey goes around your wrists. You assume the best. You always do."
         )
         game.print(
             "The lamp comes back on. You are tied to the heart-shaped bed with what looks like a "
-            "chapel bell rope. Ginger is dressed, packed, and holding your wallet. "
-            f'"Thanks for the ring, husband. And the ${taken}." She blows a kiss and takes the key. '
+            "chapel bell rope. [Ginger] is dressed, packed, and holding your wallet. "
+            f'"Thanks for the ring, [husband|wife]. And the ${taken}." [She|He] blows a kiss and takes the key. '
             "The elevator dings. You are married, broke, and tied to a bed, in that order."
         )
 
@@ -271,7 +283,7 @@ class Penthouse(Room):
                 'up," says the voice, in the tone of a desk that has done this before.'
             )
         elif p.has("untie") or p.has("rope") and p.verb in ("get", "pull", "open", "untie", "kick"):
-            game.print("You struggle. The knots are excellent. Ginger was clearly a Scout, and clearly the best one.")
+            game.print("You struggle. The knots are excellent. [Ginger] was clearly a Scout, and clearly the best one.")
         elif p.has("scream") or p.said("help") or p.said("talk"):
             game.print("You yell. The penthouse is soundproofed; that's what the money was for, when you had money.")
         elif p.has("note"):
@@ -281,11 +293,11 @@ class Penthouse(Room):
         elif p.verb == "look":
             return False
         elif p.said("inventory"):
-            game.print("You are carrying nothing. She was thorough. Also, your hands are tied.")
+            game.print("You are carrying nothing. [She|He] was thorough. Also, your hands are tied.")
         elif p.said("wait"):
             game.print("Time passes. You have a lot of it. Perhaps a foot could reach something.")
         else:
-            game.print("You're tied to a bed, Paul. Your options are limited and mostly involve your feet.")
+            game.print("You're tied to a bed, [Paul]. Your options are limited and mostly involve your feet.")
         return True
 
     def _freed(self, game: Game) -> None:
@@ -299,7 +311,7 @@ class Penthouse(Room):
         game.ego.facing = "down"
         game.ego.stop()
         game.print(
-            "The elevator dings. A maid comes in, takes in the scene, and unties you without a "
-            "word, as though it's on the checklist. She takes the rope, leaves a mint on the "
+            "The elevator dings. A [maid|houseman] comes in, takes in the scene, and unties you without a "
+            "word, as though it's on the checklist. [She|He] takes the rope, leaves a mint on the "
             "pillow, and goes. You are free, broke, and married. There's a note on the nightstand."
         )

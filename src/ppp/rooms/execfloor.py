@@ -50,6 +50,28 @@ fuuuuuuuuuuuuf
 ..kkkkkkkkkk..
 ..kkkkkkkkkk..
 """
+# Chance, at the same desk in Pauline's game: short brown hair, a yellow tie, the same blazer.
+CHANCE_ART = """
+..............
+.....bbbb.....
+....bbbbbb....
+....bbbbbb....
+....bffffb....
+....bfkfkb....
+.....ffff.....
+.....ffff.....
+.....ffff.....
+....wwyyww....
+..uuuwyywuuu..
+.uuuuwyywuuuu.
+.uuuuuyyuuuuu.
+.uuuuuuuuuuuu.
+.uuuuuuuuuuuu.
+fuuuuuuuuuuuuf
+.uuuuuuuuuuuu.
+..kkkkkkkkkk..
+..kkkkkkkkkk..
+"""
 HOPE_POS = (73, 53)  # top-left; the desk top at y=70 cuts her at the blazer
 POOL_DOOR = (4, 30)
 DESK = (56, 108)
@@ -59,8 +81,8 @@ class ExecFloor(Room):
     number = 26
     name = "The executive floor"
     description = (
-        "A hush of carpet and brass. A reception desk with a fruit bowl and a woman "
-        "behind it whose name plate says HOPE. Elevator doors on the right, a coffee "
+        "A hush of carpet and brass. A reception desk with a fruit bowl and a [woman|man] "
+        "behind it whose name plate says [HOPE|CHANCE]. Elevator doors on the right, a coffee "
         "machine beside them, a potted palm doing its best. On the left, a glass door "
         "marked ROOF POOL: PASS HOLDERS ONLY. The stairs down are at the bottom of "
         "the screen."
@@ -69,16 +91,16 @@ class ExecFloor(Room):
     edges = {"bottom": 22}
     spawns = {"default": (76, 150), 22: (76, 156), 28: (20, 120)}
     looks = {
-        "hooker": "Hope. Brown hair in a clip, a blue blazer, a wedding ring, and the "
-        "expression of a woman who has been told every line in this building and "
-        "has a stapler. She is not for you. She knows it. So, somewhere, do you.",
+        "hooker": "[Hope]. Brown hair [in a clip|cut short], a blue blazer, a wedding ring, and the "
+        "expression of a [woman|man] who has been told every line in this building and "
+        "has a stapler. [She|He] is not for you. [She|He] knows it. So, somewhere, do you.",
         "desk": "A reception desk in fake marble with a phone, a stapler, a fruit bowl, "
         "and a framed photo turned so you can't see it.",
         "apple": "A bowl of apples on the desk, red and polished, the kind nobody ever "
         "eats because they're for the look of the thing.",
         "coffee": "A coffee machine that gives out a cup for a dollar, or for nothing if "
         "you hit it right. It has been hit right many times.",
-        "elevator": "Brass doors. The penthouse. Your wife went down in it with your money.",
+        "elevator": "Brass doors. The penthouse. Your [wife|husband] went down in it with your money.",
         "door": "A glass door marked ROOF POOL: PASS HOLDERS ONLY. Beyond it, stairs going "
         "up and a smell of chlorine and money.",
         "plant": "A potted palm. It's plastic. Everything on this floor is a little plastic.",
@@ -88,7 +110,7 @@ class ExecFloor(Room):
     }
 
     def __init__(self) -> None:
-        self._hope: pygame.Surface | None = None
+        self._hope: dict[bool, pygame.Surface] = {}  # keyed by the game's version
 
     def draw(self, pic: Picture) -> None:
         pic.rect(0, 0, PIC_W, 100, LGREY)
@@ -102,7 +124,7 @@ class ExecFloor(Room):
         pic.rect(POOL_DOOR[0] + 6, 40, 14, 6, WHITE)  # the sign
         pic.rect(POOL_DOOR[0] + 6, 48, 14, 2, RED)
         # Hope first, then the reception desk in front of her
-        pic.sprite(self.hope(), HOPE_POS[0], HOPE_POS[1])
+        pic.sprite(self.hope(pic.pauline), HOPE_POS[0], HOPE_POS[1])
         pic.rect(50, 70, 60, 30, WHITE)
         pic.rect(50, 68, 60, 3, LGREY)
         pic.rect(52, 74, 56, 24, DGREY)  # a dark front panel, so the desk reads as a desk
@@ -128,18 +150,18 @@ class ExecFloor(Room):
             pic.pixel(41 + dx * 2, 82 + dy * 2, LGREEN)
         pic.walls(100)
 
-    def hope(self) -> pygame.Surface:
-        if self._hope is None:
-            self._hope = from_ascii(HOPE_ART, HOPE_LEGEND)
-        return self._hope
+    def hope(self, pauline: bool = False) -> pygame.Surface:
+        if pauline not in self._hope:
+            self._hope[pauline] = from_ascii(CHANCE_ART if pauline else HOPE_ART, HOPE_LEGEND)
+        return self._hope[pauline]
 
     def enter(self, game: Game, from_room: int | None) -> None:
         super().enter(game, from_room)
         if not game.flags.get("seen_execfloor"):
             game.flags["seen_execfloor"] = True
             game.print(
-                'Hope looks up from the desk. "Can I help you?" It is the least helpful sentence '
-                "in the language and she has practised it."
+                '[Hope] looks up from the desk. "Can I help you?" It is the least helpful sentence '
+                "in the language and [she|he] has practised it."
             )
 
     def said(self, game: Game, p: Parsed) -> bool:
@@ -149,11 +171,11 @@ class ExecFloor(Room):
             self._talk(game, at_desk)
         elif p.has("hooker") and p.verb in ("kiss", "love", "dance", "seduce"):
             game.print(
-                'Hope lifts her left hand without looking up. The ring catches the light. "Married. '
-                'Happily. To a man who bench-presses receptionists." She goes back to typing.'
+                '[Hope] lifts [her|his] left hand without looking up. The ring catches the light. "Married. '
+                'Happily. To a [man|woman] who bench-presses receptionists." [She|He] goes back to typing.'
             )
         elif p.said("give", "rol") and p.has("hooker") and not p.has("coffee"):
-            game.print("\"No thank you.\" She hasn't looked at what it is. She doesn't need to.")
+            game.print("\"No thank you.\" [She|He] hasn't looked at what it is. [She|He] doesn't need to.")
         elif p.has("coffee") and p.verb in ("get", "use", "buy", "push", "kick", "make"):
             self._coffee(game, at_machine)
         elif p.said("give", "coffee", "rol") or p.said("give", "coffee") or p.said("give", "hooker", "coffee"):
@@ -175,13 +197,13 @@ class ExecFloor(Room):
             else:
                 game.award("hope_photo")
                 game.print(
-                    "You lean over. The photo is Hope and a man the size of a vending machine, both "
-                    'laughing, on a beach. Hope turns it back around without looking up. "Yes," she says.'
+                    "You lean over. The photo is [Hope] and a [man|woman] the size of a vending machine, both "
+                    'laughing, on a beach. [Hope] turns it back around without looking up. "Yes," [she|he] says.'
                 )
         elif p.said("get", "plant") or p.said("kick", "plant"):
             game.print("It's plastic and it's bolted. Somebody anticipated you.")
         elif p.said("smell"):
-            game.print("Coffee, carpet, and a perfume that costs more than your suit did new.")
+            game.print("Coffee, carpet, and a [perfume|cologne] that costs more than your suit did new.")
         elif p.said("listen"):
             game.print("Typing. The hum of the machine. Through the glass door, faintly, splashing and a laugh.")
         else:
@@ -190,17 +212,17 @@ class ExecFloor(Room):
 
     def _talk(self, game: Game, at_desk: bool) -> None:
         if not at_desk:
-            game.print("Walk up to the desk. She doesn't raise her voice; she has a stapler for that.")
+            game.print("Walk up to the desk. [She|He] doesn't raise [her|his] voice; [she|he] has a stapler for that.")
         elif game.has("pass") or game.flags.get("pool_pass"):
             game.print('"Enjoy the party. Try not to drown; the paperwork\'s on me."')
         elif game.flags.get("hope_coffee"):
             game.print(
-                '"You brought me coffee. Nobody brings me coffee." She slides the '
+                '"You brought me coffee. Nobody brings me coffee." [She|He] slides the '
                 'pass across. "Go on. Before I think about it."'
             )
         elif game.flags.get("honeymoon_done"):
             game.print(
-                '"You\'re the one from the penthouse." It isn\'t a question. "Oh, honey." She looks at '
+                '"You\'re the one from the penthouse." It isn\'t a question. "Oh, honey." [She|He] looks at '
                 "you the way the whole city has been looking at you. \"There's a party on the roof. I "
                 "could... no. I couldn't. I haven't had a coffee in six hours.\""
             )
@@ -226,7 +248,7 @@ class ExecFloor(Room):
             game.print("Bring it to the desk. Coffee thrown across a lobby is assault.")
         elif not game.flags.get("honeymoon_done"):
             game.take("coffee")
-            game.print('"Thanks." She drinks it. That\'s all. Nothing changes, except you have no coffee.')
+            game.print('"Thanks." [She|He] drinks it. That\'s all. Nothing changes, except you have no coffee.')
         else:
             game.take("coffee")
             game.give("pass")
@@ -234,21 +256,21 @@ class ExecFloor(Room):
             game.flags["pool_pass"] = True
             game.award("hope_coffee")
             game.print(
-                'Hope takes the cup in both hands. "Nobody brings me coffee." She opens a drawer, '
+                '[Hope] takes the cup in both hands. "Nobody brings me coffee." [She|He] opens a drawer, '
                 "takes out a laminated pass on a lanyard, and puts it on the desk between you. "
-                "\"Roof pool. Private party. Don't make me regret this, and don't tell my husband, "
-                'he\'ll want one." Take an apple, she adds. "For the look of the thing."'
+                "\"Roof pool. Private party. Don't make me regret this, and don't tell my [husband|wife], "
+                '[he|she]\'ll want one." Take an apple, [she|he] adds. "For the look of the thing."'
             )
 
     def _apple(self, game: Game, at_desk: bool, eat: bool) -> None:
         if eat and game.has("apple"):
             game.print("You take a bite, then stop. Someone else might want the rest more. You wipe it on your suit.")
         elif game.has("apple"):
-            game.print("You have one. The bowl has more, but Hope has a stapler.")
+            game.print("You have one. The bowl has more, but [Hope] has a stapler.")
         elif not at_desk:
             game.print("The apples are on the desk. Walk over.")
         elif not game.flags.get("hope_coffee"):
-            game.print('"Those are for the look of the thing," says Hope, not looking up. You put it back. Slowly.')
+            game.print('"Those are for the look of the thing," says [Hope], not looking up. You put it back. Slowly.')
         else:
             game.give("apple")
             game.award("apple")

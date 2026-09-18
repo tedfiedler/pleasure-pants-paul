@@ -102,7 +102,7 @@ GROUPS: list[tuple[str, ...]] = [
     ("chip", "chips", "tokens", "winnings"),
     ("prize", "prizes", "case", "gift", "gifts", "jewellery"),
     ("elevator", "lift"),
-    ("lounge", "comedian", "comedy"),
+    ("lounge", "comedian", "comic", "comedy"),
     ("cashout", "collect"),
     ("preacher", "priest", "minister", "reverend", "pastor", "father", "vicar"),
     ("marry", "wed", "propose", "elope"),
@@ -182,13 +182,48 @@ GROUPS: list[tuple[str, ...]] = [
     ("change", "switch", "turn", "click"),
 ]
 
+# Pauline's game mirrors the cast, so the gendered words change sides: "man"
+# is the one she's chasing and "lady" is the drunk in the booth. Each entry
+# replaces the group of the same name; room logic never sees the difference.
+PAULINE_GROUPS: list[tuple[str, ...]] = [
+    ("self", "me", "myself", "pauline", "suit", "pantsuit", "pants", "clothes"),
+    ("bartender", "barkeep", "barmaid", "keeper"),
+    ("drunk", "bum", "woman", "lady", "gal", "lush", "wino", "customer"),
+    ("preacher", "priest", "priestess", "minister", "reverend", "pastor", "mother", "vicar"),
+    ("maid", "housekeeping", "housekeeper", "houseman", "porter", "desk"),
+    ("urinal", "dispenser", "vending"),
+    ("lounge", "comedian", "comedienne", "comic", "comedy"),
+    (
+        "hooker",
+        "gigolo",
+        "prostitute",
+        "man",
+        "guy",
+        "boy",
+        "donny",
+        "rusty",
+        "redhead",
+        "him",
+        "he",
+        "hunk",
+        "date",
+        "groom",
+        "husband",
+        "chance",
+        "receptionist",
+        "secretary",
+        "dusty",
+    ),
+    ("bouncer", "roxy", "madam", "thug", "goon", "miss", "ms", "doorman", "doorwoman"),
+]
+
 ANY = "anyword"
 ROL = "rol"  # rest of line
 
 
-def _build() -> dict[str, str]:
+def _build(groups: list[tuple[str, ...]]) -> dict[str, str]:
     table: dict[str, str] = {}
-    for group in GROUPS:
+    for group in groups:
         name = group[0]
         for word in group:
             assert word not in table, f"duplicate vocabulary word: {word}"
@@ -196,4 +231,15 @@ def _build() -> dict[str, str]:
     return table
 
 
-LOOKUP: dict[str, str] = _build()
+def _mirrored() -> list[tuple[str, ...]]:
+    swaps = {group[0]: group for group in PAULINE_GROUPS}
+    assert swaps.keys() <= {group[0] for group in GROUPS}, "PAULINE_GROUPS may only replace existing groups"
+    return [swaps.get(group[0], group) for group in GROUPS]
+
+
+LOOKUP: dict[str, str] = _build(GROUPS)
+PAULINE_LOOKUP: dict[str, str] = _build(_mirrored())
+
+
+def lookup(pauline: bool = False) -> dict[str, str]:
+    return PAULINE_LOOKUP if pauline else LOOKUP

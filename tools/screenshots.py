@@ -184,6 +184,10 @@ def main() -> int:
     key(pygame.K_SPACE)
     key(pygame.K_SPACE)
     shot("ending")
+    # back into play for the first-act shots; left as WON, the next key would restart to the title
+    app.state = State.PLAY
+    game.flags.pop("won", None)
+    game.vars["money"] = 94  # the second act left him broke, and the first act costs money
     game.new_room(10)
     game.messages.clear()
     game.ego.x, game.ego.y = 76, 128
@@ -238,6 +242,19 @@ def main() -> int:
     game.messages.clear()
     game.ego.x, game.ego.y = 8, 150
     cycles(0)
+
+    # the mirror-image game; shot() and cmd() follow the rebound names
+    app = App(scale=1, skip_quiz=False, pauline=True)
+    game = app.game
+    shot("pauline-title")
+    app.start_game()
+    game.messages.clear()
+    game.ego.x, game.ego.y = 52, 146  # clear of the hydrant
+    shot("pauline-street")
+    game.new_room(16)
+    game.messages.clear()
+    game.ego.x, game.ego.y = 60, 130
+    shot("pauline-upstairs")
     pygame.quit()
     return 0
 

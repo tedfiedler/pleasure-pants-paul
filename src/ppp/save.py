@@ -53,6 +53,7 @@ def snapshot(game: Game, description: str) -> dict[str, Any]:
         "sound_on": game.sound_on,
         "speed": game.speed,
         "cycle_count": game.cycle_count,
+        "pauline": game.pauline,
     }
 
 
@@ -71,6 +72,7 @@ def apply(game: Game, data: dict[str, Any]) -> None:
     game.cycle_count = int(data.get("cycle_count", 0))
     game.messages.clear()
     game.dead = False
+    game.set_pauline(bool(data.get("pauline", False)))
     game.new_room(int(data["room"]))
     game.messages.clear()  # room.enter() may greet; a restore is silent
     ego = data["ego"]

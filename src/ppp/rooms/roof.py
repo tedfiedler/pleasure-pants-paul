@@ -44,6 +44,24 @@ DAWN_ART = """
 ff..........yyy.ff
 ............yyy...
 """
+# Dusty, in the same tub in Pauline's game: dark hair cut short, bare shoulders, the same glass.
+DUSTY_ART = """
+..................
+......hhhhhh......
+.....hhhhhhhh.....
+.....hffffffh.....
+.....ffkffkff.....
+.....ffffffff.....
+......ffffff......
+.......fwwf.......
+.......ffff.......
+.....ffffffff.....
+...ffffffffffff...
+..ffffffffffffff..
+.ffff..ffff..ffff.
+ff..........yyy.ff
+............yyy...
+"""
 
 
 class Roof(Room):
@@ -52,7 +70,7 @@ class Roof(Room):
     description = (
         "The roof of the Golden Sock, under the whole sky. A pool, closed for the "
         "season and ignored, a bubbling hot tub that isn't, deck chairs, a bar cart "
-        "with one bottle left, and, in the tub, a woman with dark hair and a look "
+        "with one bottle left, and, in the tub, a [woman|man] with dark hair and a look "
         "that has been waiting for a better offer than the city has made. The door "
         "back down is at the bottom of the screen."
     )
@@ -60,10 +78,10 @@ class Roof(Room):
     edges = {"bottom": 26}
     spawns = {"default": (40, 150), 26: (20, 156)}
     looks = {
-        "hooker": "Dark hair, wet, pushed back. A glass of something on the tub's edge. She "
-        "watches you the way a cat watches weather: interested, uninvolved. Her name, "
-        "she'll tell you if you ask, is Dawn.",
-        "tub": "A hot tub, steaming, lit from beneath. It is the only warm thing on the roof and she is in it.",
+        "hooker": "Dark hair, wet, pushed back. A glass of something on the tub's edge. [She|He] "
+        "watches you the way a cat watches weather: interested, uninvolved. [Her|His] name, "
+        "[she|he]'ll tell you if you ask, is [Dawn].",
+        "tub": "A hot tub, steaming, lit from beneath. It is the only warm thing on the roof and [she|he] is in it.",
         "balcony": "The pool, drained to a puddle, with a sign floating in it: CLOSED FOR THE SEASON.",
         "pool": "The pool, drained to a puddle, with a sign floating in it: CLOSED FOR THE SEASON.",
         "window": "No windows up here. Just the city, all of it, blinking.",
@@ -71,13 +89,13 @@ class Roof(Room):
         "champagne": "A bar cart with one bottle of champagne left, sweating, and two glasses.",
         "stool": "Deck chairs, folded, stacked, done for the year.",
         "floor": "Wet tiles and the smell of chlorine. Mind your step; nobody else will.",
-        "apple": "A red apple, polished, from Hope's bowl. It's the nicest thing you've ever held "
+        "apple": "A red apple, polished, from [Hope]'s bowl. It's the nicest thing you've ever held "
         "that wasn't a remote.",
         "sign": "CLOSED FOR THE SEASON, floating in the pool. The season, for once, has come to you.",
     }
 
     def __init__(self) -> None:
-        self._dawn: pygame.Surface | None = None
+        self._dawn: dict[bool, pygame.Surface] = {}  # keyed by game.pauline
         self._water: list[pygame.Surface] = []
 
     def draw(self, pic: Picture) -> None:
@@ -115,10 +133,10 @@ class Roof(Room):
         pic.walls(64)
         pic.rect(0, 64, PIC_W, 36, None, 0)  # the parapet zone is not for walking
 
-    def dawn(self) -> pygame.Surface:
-        if self._dawn is None:
-            self._dawn = from_ascii(DAWN_ART, DAWN_LEGEND)
-        return self._dawn
+    def dawn(self, pauline: bool = False) -> pygame.Surface:
+        if pauline not in self._dawn:
+            self._dawn[pauline] = from_ascii(DUSTY_ART if pauline else DAWN_ART, DAWN_LEGEND)
+        return self._dawn[pauline]
 
     def water(self) -> list[pygame.Surface]:
         if not self._water:
@@ -140,7 +158,7 @@ class Roof(Room):
     def objects(self, game: Game) -> list[tuple[pygame.Surface, int, int]]:
         if game.flags.get("won"):
             return []
-        return [(self.dawn(), DAWN_POS[0], DAWN_POS[1])]
+        return [(self.dawn(game.pauline), DAWN_POS[0], DAWN_POS[1])]
 
     def enter(self, game: Game, from_room: int | None) -> None:
         super().enter(game, from_room)
@@ -148,7 +166,7 @@ class Roof(Room):
             game.flags["seen_roof"] = True
             game.print(
                 "The roof. Wind, stars, chlorine. A private party of exactly one, in the hot tub, "
-                'who looks over and says, "You\'re not the waiter."'
+                'who looks over and says, "You\'re not the [waiter|waitress]."'
             )
 
     def _near_tub(self, game: Game) -> bool:
@@ -161,18 +179,22 @@ class Roof(Room):
         elif p.said("give", "apple", "rol") or p.said("give", "apple") or p.said("give", "hooker", "apple"):
             self._apple(game)
         elif p.said("give", "rol") and p.has("hooker"):
-            game.print('"Sweet," says Dawn, meaning no. She has a glass. She has everything, except one thing.')
+            game.print(
+                '"Sweet," says [Dawn], meaning no. [She|He] has a glass. [She|He] has everything, except one thing.'
+            )
         elif p.has("tub") and p.verb in ("enter", "use", "climb", "get") or p.has("swim") or p.said("enter"):
             self._tub(game)
         elif p.has("hooker") and p.verb in ("kiss", "love", "undress"):
             if game.flags.get("dawn_apple"):
                 self._tub(game)
             else:
-                game.print("She lifts one eyebrow. It is the most effective thing anyone has done to you all night.")
+                game.print(
+                    "[She|He] lifts one eyebrow. It is the most effective thing anyone has done to you all night."
+                )
         elif p.has("pool", "balcony") and p.verb in ("enter", "use", "swim", "climb") or p.said("climb", "rol"):
             game.die(
                 "You climb the parapet for a better look at the city. The city looks back. The wind "
-                "makes a suggestion and your suit, being polyester, agrees. Paul goes down in style, "
+                "makes a suggestion and your suit, being polyester, agrees. [Paul] goes down in style, "
                 "twenty floors of it."
             )
         elif p.said("look", "window") or p.said("look", "window", "rol"):
@@ -191,14 +213,15 @@ class Roof(Room):
 
     def _talk(self, game: Game) -> None:
         if not self._near_tub(game):
-            game.print("Walk over to the tub. She isn't going to shout; she's in water.")
+            game.print("Walk over to the tub. [She|He] isn't going to shout; [she|he]'s in water.")
         elif game.flags.get("dawn_apple"):
             game.print('"Are you getting in or not? The water\'s not going to stay this temperature and neither am I."')
         else:
             game.print(
-                '"Dawn," she says, before you ask. "I know who you are. Everybody in the building knows '
-                'who you are. The wedding, the rope, the maid." She sips. "You know what I haven\'t had '
-                'all night, with all this?" She waves at the cart. "Something honest. Something simple."'
+                '"[Dawn]," [she|he] says, before you ask. "I know who you are. Everybody in the building knows '
+                'who you are. The wedding, the rope, the [maid|houseman]." [She|He] sips. '
+                '"You know what I haven\'t had all night, with all this?" [She|He] waves at the cart. '
+                '"Something honest. Something simple."'
             )
 
     def _apple(self, game: Game) -> None:
@@ -207,34 +230,36 @@ class Roof(Room):
                 "You don't have an apple. You'd need to find one, somewhere polished and for the look of the thing."
             )
         elif not self._near_tub(game):
-            game.print("Take it over to her. Apples thrown at hot tubs are how nights end early.")
+            game.print("Take it over to [her|him]. Apples thrown at hot tubs are how nights end early.")
         elif game.flags.get("dawn_apple"):
-            game.print("She's already got the apple. She's got a bite out of it. What she wants now is you.")
+            game.print(
+                "[She|He]'s already got the apple. [She|He]'s got a bite out of it. What [she|he] wants now is you."
+            )
         else:
             game.take("apple")
             game.flags["dawn_apple"] = True
             game.award("dawn_apple")
             game.print(
-                "You hold out the apple. Dawn looks at it for a long moment, then at you, then takes it "
-                'and bites. "Huh," she says, with her mouth full. "Honest. Simple." She moves over. '
-                '"Get in, Paul. Suit and all. Especially the suit."'
+                "You hold out the apple. [Dawn] looks at it for a long moment, then at you, then takes it "
+                'and bites. "Huh," [she|he] says, with [her|his] mouth full. "Honest. Simple." [She|He] moves over. '
+                '"Get in, [Paul]. Suit and all. Especially the suit."'
             )
 
     def _tub(self, game: Game) -> None:
         if not self._near_tub(game):
             game.print("The tub is in the middle of the roof. Walk over.")
         elif not game.flags.get("dawn_apple"):
-            game.print('"Private party," says Dawn, not unkindly. "Bring something. Anything. Try honest."')
+            game.print('"Private party," says [Dawn], not unkindly. "Bring something. Anything. Try honest."')
         else:
             game.flags["won"] = True
             game.award("ending")
             game.ego.visible = False
             game.ego.frozen = True
             game.print(
-                "You climb into the hot tub in a white leisure suit, which floats, briefly, then "
-                "doesn't. Dawn laughs. It's a real laugh. You've been waiting all night for a real anything."
+                "You climb into the hot tub in a white [leisure suit|pantsuit], which floats, briefly, then "
+                "doesn't. [Dawn] laughs. It's a real laugh. You've been waiting all night for a real anything."
             )
             game.print(
                 "The city blinks below. The season, it turns out, was never closed; it was waiting. "
-                "Dawn puts her head on your shoulder. The saxophone, somewhere, finally stops."
+                "[Dawn] puts [her|his] head on your shoulder. The saxophone, somewhere, finally stops."
             )

@@ -116,8 +116,8 @@ class Alley(Room):
             )
         elif self.timer >= MUGGER_ARRIVES:
             game.die(
-                "A large man steps out of the shadows and relieves you of your wallet, "
-                "your dignity, and, after some thought, your pulse. Paul dies in an "
+                "[A large man|A large woman] steps out of the shadows and relieves you of your wallet, "
+                "your dignity, and, after some thought, your pulse. [Paul] dies in an "
                 "alley, which is at least on brand."
             )
 
@@ -151,13 +151,13 @@ class Alley(Room):
         elif p.said("kick", "dog") or p.said("push", "dog") or p.said("get", "dog"):
             game.die(
                 "The dog was not asleep. The dog was waiting. It has your ankle, then your "
-                "calf, then your attention, and then it has all of you. Paul is dog food."
+                "calf, then your attention, and then it has all of you. [Paul] is dog food."
             )
         elif p.has("rooster") and p.has("sent"):
             self._password(game)
         elif p.said("knock", "door") or p.said("push", "door"):
             if game.flags.get("backdoor_open"):
-                game.print("It's already open, Paul. Knocking on an open door is a cry for help.")
+                game.print("It's already open, [Paul]. Knocking on an open door is a cry for help.")
             else:
                 game.print(
                     'The slot slides open. Two eyes. "Password?" You offer your best smile. '

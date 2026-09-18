@@ -36,7 +36,7 @@ class DiscoStreet(Room):
     name = "Outside the Boogie Palace"
     description = (
         "The Boogie Palace throbs behind a purple door. A velvet rope keeps the "
-        "sidewalk in line and a doorman keeps the rope. Music leaks out every time "
+        "sidewalk in line and a [doorman|doorwoman] keeps the rope. Music leaks out every time "
         "the door opens, which is never for you. Cabs stop at the curb."
     )
     horizon = CURB_Y
@@ -47,9 +47,9 @@ class DiscoStreet(Room):
         "fashionable in the year it opened and has been waiting since.",
         "sign": "BOOGIE PALACE, in pink neon script that buzzes like a wasp in a jar.",
         "door": "A purple door with a porthole. Every time it opens you hear bass and see "
-        "lights. Every time it closes you see the doorman.",
-        "bouncer": "A doorman in a tuxedo two sizes too tight, with a clipboard he doesn't "
-        "read and a face that has never been on a list either. He's bored, which is "
+        "lights. Every time it closes you see the [doorman|doorwoman].",
+        "bouncer": "A [doorman|doorwoman] in a tuxedo two sizes too tight, with a clipboard [he|she] doesn't "
+        "read and a face that has never been on a list either. [He's|She's] bored, which is "
         "worse than mean.",
         "rope": "A velvet rope on brass posts. It is the most expensive thing on the block "
         "and it is here to keep you out.",
@@ -108,8 +108,8 @@ class DiscoStreet(Room):
         if not game.flags.get("seen_discostreet"):
             game.flags["seen_discostreet"] = True
             game.print(
-                "Bass through the pavement. Glitter in the gutter. The doorman looks at "
-                "your suit, then at his clipboard, then at nothing, which is where you are on it."
+                "Bass through the pavement. Glitter in the gutter. The [doorman|doorwoman] looks at "
+                "your suit, then at [his|her] clipboard, then at nothing, which is where you are on it."
             )
 
     def _at_door(self, game: Game) -> bool:
@@ -129,7 +129,7 @@ class DiscoStreet(Room):
         game.ego.stop()
         game.ego.y = 126
         game.print(
-            'The doorman\'s arm drops like a toll gate. "Members only." You are not a '
+            'The [doorman|doorwoman]\'s arm drops like a toll gate. "Members only." You are not a '
             "member. You have never been a member of anything that had a door."
         )
 
@@ -138,22 +138,26 @@ class DiscoStreet(Room):
             pass
         elif p.said("talk", "bouncer") or p.said("talk", "bouncer", "rol") or p.said("talk"):
             if game.flags.get("disco_admitted"):
-                game.print('"Go on in, sir." He says sir the way other men say buddy.')
+                game.print(
+                    "\"Go on in, [sir|ma'am].\" [He|She] says [sir|ma'am] the way other [men|women] say [buddy|honey]."
+                )
             else:
                 game.print(
-                    '"Members only." He taps the clipboard. "Or a pass. Or..." He looks at '
+                    '"Members only." [He|She] taps the clipboard. "Or a pass. Or..." [He|She] looks at '
                     "you sideways. \"Or you make it worth my while, and I don't mean money, "
                     'I got money."'
                 )
         elif p.said("give", "magazine") or p.said("give", "magazine", "rol") or p.said("give", "bouncer", "magazine"):
             self._bribe(game)
         elif p.said("give", "rol") and p.has("bouncer"):
-            game.print('He glances at it. "Not that." His eyes drift, briefly, to your coat pocket. Interesting.')
+            game.print(
+                '[He|She] glances at it. "Not that." [His|Her] eyes drift, briefly, to your coat pocket. Interesting.'
+            )
         elif p.said("show", "pass") or p.said("give", "pass") or p.said("use", "pass"):
-            game.print("You'd need a pass first. You don't. The doorman knows it. The rope knows it.")
+            game.print("You'd need a pass first. You don't. The [doorman|doorwoman] knows it. The rope knows it.")
         elif p.said("push", "bouncer") or p.said("kick", "bouncer") or p.said("kiss", "bouncer"):
             game.print(
-                "You try to get past him. He lifts you with one hand and puts you back "
+                "You try to get past [him|her]. [He|She] lifts you with one hand and puts you back "
                 "on the curb the way you'd set down a cup. Nothing spilled. Nothing gained."
             )
             game.ego.x, game.ego.y = 100, 136
@@ -163,11 +167,13 @@ class DiscoStreet(Room):
             elif self._at_door(game):
                 self._try_door(game)
             else:
-                game.print("Walk up to the purple door, if the doorman lets you.")
+                game.print("Walk up to the purple door, if the [doorman|doorwoman] lets you.")
         elif p.said("open", "rope") or p.said("pull", "rope") or p.said("get", "rope"):
-            game.print("You unhook the rope. The doorman re-hooks it, with your hand still on it.")
+            game.print("You unhook the rope. The [doorman|doorwoman] re-hooks it, with your hand still on it.")
         elif p.said("dance"):
-            game.print("You dance on the sidewalk. The doorman watches. Whatever chance you had, it's smaller now.")
+            game.print(
+                "You dance on the sidewalk. The [doorman|doorwoman] watches. Whatever chance you had, it's smaller now."
+            )
         elif p.said("smell"):
             game.print("Dry ice, hairspray, and a cologne that should have been declared at customs.")
         elif p.said("listen"):
@@ -178,17 +184,17 @@ class DiscoStreet(Room):
 
     def _bribe(self, game: Game) -> None:
         if not game.has("magazine"):
-            game.print("You don't have a magazine. The doorman looks, briefly, disappointed in you.")
+            game.print("You don't have a magazine. The [doorman|doorwoman] looks, briefly, disappointed in you.")
         elif not self.near(game, 80, 120, 130):
-            game.print("Walk up to the doorman. Discreetly. This is a discreet kind of transaction.")
+            game.print("Walk up to the [doorman|doorwoman]. Discreetly. This is a discreet kind of transaction.")
         elif game.flags.get("disco_admitted"):
-            game.print("He's already got what he wanted. Don't push it; he's a page-turner.")
+            game.print("[He's|She's] already got what [he|she] wanted. Don't push it; [he's|she's] a page-turner.")
         else:
             game.take("magazine")
             game.flags["disco_admitted"] = True
             game.award("bribe_doorman")
             game.print(
-                "You slide the brown-paper magazine into the clipboard. The doorman does "
-                'not look down. "Never seen you before," he says warmly, unhooking the rope. '
-                '"Have a good night, sir."'
+                "You slide the brown-paper magazine into the clipboard. The [doorman|doorwoman] does "
+                'not look down. "Never seen you before," [he|she] says warmly, unhooking the rope. '
+                '"Have a good night, [sir|ma\'am]."'
             )

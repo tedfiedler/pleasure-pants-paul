@@ -9,6 +9,7 @@ from enum import Enum, auto
 import pygame
 
 from ppp import __version__, save, sound
+from ppp.cast import TITLE, render
 from ppp.const import BLACK, PALETTE, PIC_H, PIC_TOP, PIC_W, SCREEN_H, SCREEN_W, WHITE, YELLOW
 from ppp.dialog import ConfirmDialog, Dialog, ListDialog, TextDialog
 from ppp.game import MAX_SCORE, Game
@@ -21,7 +22,7 @@ TITLE_LINES = [
     "",
     "",
     "",
-    "        PLEASURE PANTS PAUL",
+    "[        PLEASURE PANTS PAUL|      PLEASURE PANTS PAULINE]",
     "",
     "     a text-parser adventure in",
     "      sixteen glorious colours",
@@ -63,17 +64,18 @@ class State(Enum):
 
 
 class App:
-    def __init__(self, scale: int, skip_quiz: bool) -> None:
+    def __init__(self, scale: int, skip_quiz: bool, pauline: bool = False) -> None:
         sound.init()
         pygame.init()
-        pygame.display.set_caption("Pleasure Pants Paul")
+        self.pauline = pauline  # which version a new game starts as; a restored game keeps its own
+        pygame.display.set_caption(render(TITLE, pauline))
         self.scale = scale
         self.window = pygame.display.set_mode((SCREEN_W * scale, SCREEN_H * scale))
         self.screen = pygame.Surface((SCREEN_W, SCREEN_H))
         self.clock = pygame.time.Clock()
         self.state = State.QUIZ if skip_quiz else State.TITLE
         self.quiz = Quiz()
-        self.game = Game()
+        self.game = Game(pauline=pauline)
         register(self.game)
         self.input = ""
         self.ticks = 0
@@ -98,7 +100,7 @@ class App:
         pygame.key.start_text_input()
 
     def restart(self) -> None:
-        self.game = Game()
+        self.game = Game(pauline=self.pauline)
         register(self.game)
         self.input = ""
         self.start_game()
@@ -228,7 +230,7 @@ class App:
             if game.dead:
                 self.stop()
             else:
-                self.dialog = ConfirmDialog("Leave Paul to his fate?", "quit", self.stop)
+                self.dialog = ConfirmDialog(game.tr("Leave [Paul] to [his|her] fate?"), "quit", self.stop)
         elif action in ("look", "inventory", "score", "help"):
             game.handle_input(action)
         elif action == "sound":
@@ -244,13 +246,13 @@ class App:
             "",
             "              THE END",
             "",
-            "   Paul got the girl, the roof, and",
+            self.game.tr("   [Paul] got the [girl|guy], the roof, and"),
             "   the hot tub, and kept the suit.",
             "",
             f"   Final score: {self.game.score} of {MAX_SCORE}",
             "",
             "   Thanks for playing",
-            "        PLEASURE PANTS PAUL",
+            self.game.tr("[        PLEASURE PANTS PAUL|      PLEASURE PANTS PAULINE]"),
             "",
             "",
             "      press any key for the title",
@@ -260,7 +262,7 @@ class App:
         choices = ["Restore a saved game", "Restart from the beginning", "Quit"]
         actions = ["restore", "restart", "quit"]
         self.dialog = ListDialog(
-            f"Paul is dead. Score: {self.game.score} of {MAX_SCORE}.",
+            self.game.tr(f"[Paul] is dead. Score: {self.game.score} of {MAX_SCORE}."),
             choices,
             lambda i: self.do_action(actions[i]),
             cancellable=False,
@@ -280,7 +282,7 @@ class App:
         except (OSError, ValueError, KeyError) as exc:
             self.game.print(f"Couldn't restore that game: {exc}")
         else:
-            self.game.print(f'Restored "{info.description}". Welcome back, Paul.')
+            self.game.print(f'Restored "{info.description}". Welcome back, [Paul].')
 
     def stop(self) -> None:
         self.running = False
@@ -289,9 +291,9 @@ class App:
 
     def draw(self) -> None:
         if self.state == State.TITLE:
-            draw_text_screen(self.screen, TITLE_LINES, fg=YELLOW, bg=BLACK, top=0)
+            draw_text_screen(self.screen, [render(t, self.pauline) for t in TITLE_LINES], fg=YELLOW, bg=BLACK, top=0)
         elif self.state == State.QUIZ:
-            draw_text_screen(self.screen, self.quiz.lines(), fg=WHITE, bg=BLACK)
+            draw_text_screen(self.screen, [render(t, self.pauline) for t in self.quiz.lines()], fg=WHITE, bg=BLACK)
         elif self.state == State.WON:
             draw_text_screen(self.screen, self.ending_lines(), fg=YELLOW, bg=BLACK, top=0)
         elif self.state == State.REJECTED:
@@ -363,11 +365,12 @@ class App:
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(prog="ppp", description="Pleasure Pants Paul")
+    ap = argparse.ArgumentParser(prog="ppp", description=render(TITLE, False))
     ap.add_argument("--scale", type=int, default=3, help="integer window scale (default 3)")
     ap.add_argument("--skip-quiz", action="store_true", help="skip the title and age quiz")
+    ap.add_argument("--pauline", action="store_true", help="play as Pauline, with the whole cast mirrored")
     args = ap.parse_args(argv)
-    App(scale=max(1, args.scale), skip_quiz=args.skip_quiz).run()
+    App(scale=max(1, args.scale), skip_quiz=args.skip_quiz, pauline=args.pauline).run()
     return 0
 
 

@@ -39,7 +39,8 @@ class Store(Room):
     edges = {"bottom": 17}
     spawns = {"default": (76, 150), 17: (76, 156)}
     looks = {
-        "clerk": "A kid in a red vest with a name tag that says ASK ME. Nothing about him suggests that you should.",
+        "clerk": "A kid in a red vest with a name tag that says ASK ME. "
+        "Nothing about [him|her] suggests that you should.",
         "bar": "A counter with a register, a jar of pickled something, a rack of lighters, "
         "and, behind the clerk, the discreet little boxes that people cross town for.",
         "shelf": "Chips, jerky, a pyramid of canned meat, and a cake that has been on sale since the moon landing.",
@@ -50,7 +51,7 @@ class Store(Room):
         "cherry, regret and the parking lot.",
         "magazine": "The top row is wrapped in brown paper, which is how you know which "
         "row it is. Three dollars. The clerk is already judging you.",
-        "protection": "The little boxes behind the counter. You'll have to ask. Out loud. To him.",
+        "protection": "The little boxes behind the counter. You'll have to ask. Out loud. To [him|her].",
         "floor": "Black and white tiles, mopped recently by someone who hates them.",
         "window": "Through the glass: the street, the phone, and a cab that isn't yours.",
         "door": "The glass doors, and the bell above them. The way out is at the bottom of the screen.",
@@ -114,7 +115,7 @@ class Store(Room):
         super().enter(game, from_room)
         if not game.flags.get("seen_store"):
             game.flags["seen_store"] = True
-            game.print('A bell jingles. "Help you?" says the clerk, in the tone of a man hoping not to.')
+            game.print('A bell jingles. "Help you?" says the clerk, in the tone of a [man|woman] hoping not to.')
 
     def _near_counter(self, game: Game) -> bool:
         return self.near(game, 36, 128)
@@ -127,11 +128,12 @@ class Store(Room):
             game.die(
                 "You palm it and turn for the door. The clerk produces a shotgun from under "
                 "the counter with the ease of long practice. The sign by the register was "
-                "not a joke. Paul is now a cautionary poster in the break room."
+                "not a joke. [Paul] is now a cautionary poster in the break room."
             )
         elif p.said("talk", "clerk") or p.said("talk", "clerk", "rol") or p.said("talk"):
             game.print(
-                '"Help you?" He does not look up from a magazine. It is not one of the brown-paper ones. It is worse.'
+                '"Help you?" [He|She] does not look up from a magazine. '
+                "It is not one of the brown-paper ones. It is worse."
             )
         elif p.said("look", "protection", "rol") or p.said("look", "bar", "rol"):
             game.print(self.looks["protection"])
@@ -161,7 +163,9 @@ class Store(Room):
         elif p.said("listen"):
             game.print("The cooler hums. The tubes buzz. The clerk turns a page with wet fingers.")
         elif p.said("pay", "rol") or p.said("pay"):
-            game.print("Say what you're buying. He's not a mind reader, and if he were he'd have quit.")
+            game.print(
+                "Say what you're buying. [He's|She's] not a mind reader, and if [he|she] were [he'd|she'd] have quit."
+            )
         else:
             return False
         return True
@@ -188,7 +192,7 @@ class Store(Room):
             )
             return
         if not self._near_counter(game):
-            game.print("Walk up to the counter. He's not coming to you; nobody in this city comes to you.")
+            game.print("Walk up to the counter. [He's|She's] not coming to you; nobody in this city comes to you.")
             return
         if game.has(item):
             game.print("You've already got one. Pace yourself; the night is long and so is your list.")
@@ -197,7 +201,7 @@ class Store(Room):
         money = game.vars.get("money", 0)
         if money < price:
             game.print(
-                f'"That\'s ${price}." You have ${money}. He looks at you the way the cooler looks at a warm soda.'
+                f'"That\'s ${price}." You have ${money}. [He|She] looks at you the way the cooler looks at a warm soda.'
             )
             return
         game.vars["money"] = money - price
@@ -210,26 +214,27 @@ class Store(Room):
             )
             game.print(
                 '"Sure. What kind? Ribbed? Lubricated? Coloured? Flavoured? Extra-large? '
-                'Extra-small?" He is not lowering his voice. He is, if anything, raising it.'
+                'Extra-small?" [He|She] is not lowering [his|her] voice. [He|She] is, if anything, raising it.'
             )
             game.print(
-                'He leans into the microphone by the register. "PRICE CHECK. ONE PROTECTION, '
-                'PLAIN, SMALL, FOR THE GENTLEMAN IN THE WHITE SUIT." The whole store looks. '
-                f"The whole store is you and him. You pay ${price} and have ${game.vars['money']} left."
+                '[He|She] leans into the microphone by the register. "PRICE CHECK. ONE PROTECTION, '
+                'PLAIN, [SMALL|OPTIMISTIC], FOR THE [GENTLEMAN|LADY] IN THE WHITE SUIT." The whole store looks. '
+                f"The whole store is you and [him|her]. You pay ${price} and have ${game.vars['money']} left."
             )
         elif item == "wine":
             game.award("buy_wine")
             game.print(
-                f'"Chateau Kwik. Good year, this year." He bags it. ${price}. You have ${game.vars["money"]} left.'
+                f'"Chateau Kwik. Good year, this year." [He|She] bags it. ${price}. '
+                f"You have ${game.vars['money']} left."
             )
         elif item == "lottery":
             game.print(
-                f'"Scratcher. Lucky Sock." He tears one off the roll. ${price}. You have ${game.vars["money"]} left '
-                "and a small rectangle of hope."
+                f'"Scratcher. Lucky Sock." [He|She] tears one off the roll. ${price}. '
+                f"You have ${game.vars['money']} left and a small rectangle of hope."
             )
         else:
             game.award("buy_magazine")
             game.print(
-                f"He slides the brown-paper magazine across without meeting your eye. ${price}. "
+                f"[He|She] slides the brown-paper magazine across without meeting your eye. ${price}. "
                 f"You have ${game.vars['money']} left, and the beginnings of a reputation."
             )

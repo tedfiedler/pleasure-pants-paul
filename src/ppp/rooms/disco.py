@@ -91,6 +91,67 @@ f.hh.ff.hh.f
 kkk.....kkk.
 kkk.....kkk.
 """
+# Rusty, Ginger's opposite number in Pauline's game: same red hair, a green
+# velvet suit over an open white shirt. Same size and stance, so either fits any scene.
+RUSTY_ART = """
+....hhhh....
+...hhhhhh...
+...hffffh...
+...hfkfkh...
+....ffff....
+....ffff....
+.....ff.....
+...ggwwgg...
+..gggwwggg..
+..gggwwggg..
+..gggggggg..
+.fgggggggg..
+..gggggggg..
+..gggggggg..
+..gggggggg..
+...gggggg...
+...gggg.....
+...gggg.....
+...gggg.....
+...gggg.....
+...gggg.....
+...gggg.....
+..kkkk......
+..kkkk......
+"""
+RUSTY_DANCE = """
+....hhhh....
+...hhhhhh...
+...hffffh...
+...hfkfkh...
+....ffff....
+....ffff....
+f....ff....f
+.g.ggwwgg.g.
+..gggwwgggg.
+..gggwwggg..
+..gggggggg..
+..gggggggg..
+..gggggggg..
+..gggggggg..
+..gggggggg..
+...gggggg...
+..gg..gg....
+..gg...gg...
+..gg...gg...
+.gg.....gg..
+.gg.....gg..
+.gg.....gg..
+kkk.....kkk.
+kkk.....kkk.
+"""
+
+
+def ginger_art(pauline: bool) -> tuple[str, str]:
+    """The (standing, dancing) art for Ginger, or for Rusty in Pauline's game. Both use GINGER_LEGEND."""
+    return (RUSTY_ART, RUSTY_DANCE) if pauline else (GINGER_ART, GINGER_DANCE)
+
+
 FLOOR_COLOURS = (MAGENTA, CYAN, YELLOW, LMAGENTA, LBLUE, LGREEN, RED, LCYAN)
 
 
@@ -102,26 +163,26 @@ class Disco(Room):
         "mirror ball throws light on everyone but you, and a DJ in a booth on the "
         "right is playing something with a saxophone. There's a bar along the back "
         "and a table by the left wall where a redhead in green sits alone, which is "
-        "a temporary condition she seems fine with. A door at the back right says "
-        "LADIES. The exit is at the bottom of the screen."
+        "a temporary condition [she|he] seems fine with. A door at the back right says "
+        "[LADIES|MEN]. The exit is at the bottom of the screen."
     )
     horizon = 98
     edges = {"bottom": 19}
     spawns = {"default": (76, 150), 19: (76, 156)}
     looks = {
-        "hooker": "Red hair, green dress, a drink with an umbrella in it and a look that "
-        "has already priced you. Her name, the napkin says, is Ginger. She has "
-        "written it herself, and underlined it.",
+        "hooker": "Red hair, green [dress|velvet suit], a drink with an umbrella in it and a look that "
+        "has already priced you. [Her|His] name, the napkin says, is [Ginger]. [She|He] has "
+        "written it [herself|himself], and underlined it.",
         "floor": "The dance floor is a grid of glass squares lit from below, pulsing in "
         "colours that don't occur in nature or in good taste.",
         "ball": "A mirror ball, turning slowly, throwing a thousand tiny spotlights "
         "on people who are having a better night than you.",
-        "dj": "A DJ with headphones around his neck and sunglasses on, indoors, at "
-        "night. He is nodding to a beat that is not the one playing.",
+        "dj": "A DJ with headphones around [his|her] neck and sunglasses on, indoors, at "
+        "night. [He|She] is nodding to a beat that is not the one playing.",
         "bar": "A chrome bar along the back wall with bottles lit from below. The bartender "
         "is a silhouette and prefers it that way.",
-        "stool": "A small round table by the wall, with a candle in a red jar and Ginger.",
-        "door": "A door at the back right marked LADIES. It's not for you. Nothing here is, yet.",
+        "stool": "A small round table by the wall, with a candle in a red jar and [Ginger].",
+        "door": "A door at the back right marked [LADIES|MEN]. It's not for you. Nothing here is, yet.",
         "wall": "Black walls, chrome trim, and a smell that clings.",
         "candy": "A heart-shaped box of chocolates, two missing. Someone in here might like them.",
         "wine": "A bottle of Chateau Kwik. In this light it's almost champagne.",
@@ -129,7 +190,7 @@ class Disco(Room):
     }
 
     def __init__(self) -> None:
-        self._ginger: list[pygame.Surface] = []
+        self._ginger: dict[bool, list[pygame.Surface]] = {}  # by version: Ginger, or Rusty for Pauline
         self._floor: list[pygame.Surface] = []
         self.dance_timer = 0
 
@@ -175,10 +236,10 @@ class Disco(Room):
 
     # -- sprites -------------------------------------------------------------------
 
-    def ginger(self, dancing: bool) -> pygame.Surface:
-        if not self._ginger:
-            self._ginger = [from_ascii(GINGER_ART, GINGER_LEGEND), from_ascii(GINGER_DANCE, GINGER_LEGEND)]
-        return self._ginger[1 if dancing else 0]
+    def ginger(self, dancing: bool, pauline: bool = False) -> pygame.Surface:
+        if pauline not in self._ginger:
+            self._ginger[pauline] = [from_ascii(art, GINGER_LEGEND) for art in ginger_art(pauline)]
+        return self._ginger[pauline][1 if dancing else 0]
 
     def floor_frames(self) -> list[pygame.Surface]:
         if not self._floor:
@@ -202,10 +263,10 @@ class Disco(Room):
         if game.flags.get("ginger_married"):
             return out
         if self.dance_timer:
-            frame = self.ginger((game.cycle_count // 6) % 2 == 0)
+            frame = self.ginger((game.cycle_count // 6) % 2 == 0, game.pauline)
             gx, gy = GINGER_FLOOR
         else:
-            frame = self.ginger(False)
+            frame = self.ginger(False, game.pauline)
             gx, gy = GINGER_TABLE
         out.append((frame, gx, gy))
         return out
@@ -249,19 +310,23 @@ class Disco(Room):
         elif p.said("give", "wine", "rol") or p.said("give", "wine") or p.said("give", "hooker", "wine"):
             self._give(game, "wine")
         elif p.said("give", "rol") and p.has("hooker"):
-            game.print('Ginger looks at it, then at you. "Sweet," she says, meaning no.')
+            game.print('[Ginger] looks at it, then at you. "Sweet," [she|he] says, meaning no.')
         elif p.said("dance", "rol") or p.said("dance"):
             self._dance(game, with_her=p.has("hooker") or self._near_ginger(game))
         elif p.said("kiss", "hooker"):
             if game.flags.get("ginger_danced"):
-                game.print('"Ring first, Romeo." She taps her bare finger. "Then we\'ll talk about the rest."')
+                game.print(
+                    '"Ring first, [Romeo|Juliet]." [She|He] taps [her|his] bare finger. '
+                    '"Then we\'ll talk about the rest."'
+                )
             else:
                 game.print(
-                    'She leans away with the precision of long practice. "Buy a girl a drink first. Or a country."'
+                    "[She|He] leans away with the precision of long practice. "
+                    '"Buy a [girl|guy] a drink first. Or a country."'
                 )
         elif p.said("sit", "rol") or p.said("sit"):
             if self._near_ginger(game):
-                game.print("You sit. Ginger allows it, the way a cat allows weather.")
+                game.print("You sit. [Ginger] allows it, the way a cat allows weather.")
             else:
                 game.print("There's one table, and someone's at it. Everyone else stands; it's that kind of place.")
         elif (
@@ -271,25 +336,26 @@ class Disco(Room):
         elif p.said("talk", "dj") or p.said("use", "dj") or p.has("song"):
             game.award("request_song")
             game.print(
-                "You request a song. The DJ nods, and plays the one he was going to play anyway. It has a saxophone."
+                "You request a song. The DJ nods, and plays the one [he|she] was going to play anyway. "
+                "It has a saxophone."
             )
         elif p.said("buy", "rol") or p.said("buy"):
             game.print("The bartender is a silhouette. Silhouettes don't take orders; you've tried.")
         elif p.has("door") and p.verb in ("open", "enter", "use") or p.said("enter", "bathroom"):
             if LADIES_X[0] - 8 <= game.ego.centre_x <= LADIES_X[1] + 8 and game.ego.y <= 110:
                 game.die(
-                    "You push through the door marked LADIES. A scream. A handbag, swung "
-                    "with real technique. Another. Paul dies of blunt force purse, which "
+                    "You push through the door marked [LADIES|MEN]. A [scream|bellow]. A [handbag|gym bag], swung "
+                    "with real technique. Another. [Paul] dies of blunt force [purse|duffel], which "
                     "the coroner spells correctly on the second try."
                 )
             else:
-                game.print("The LADIES door is at the back right. Think hard about whether you want to.")
+                game.print("The [LADIES|MEN] door is at the back right. Think hard about whether you want to.")
         elif p.said("look", "hooker", "rol"):
             game.print(self.looks["hooker"])
         elif p.said("smell"):
             game.print("Dry ice, spilled sweet drinks, and a hundred colognes fighting to the death.")
         elif p.said("listen"):
-            game.print("Bass. A saxophone, of course. Ginger, laughing at something that wasn't you.")
+            game.print("Bass. A saxophone, of course. [Ginger], laughing at something that wasn't you.")
         else:
             return False
         return True
@@ -297,60 +363,65 @@ class Disco(Room):
     def _tip_dj(self, game: Game) -> None:
         money = game.vars.get("money", 0)
         if "tip_dj" in game.scored:
-            game.print("He's had your five. He's playing it now, in a sense. It has a saxophone.")
+            game.print("[He's|She's] had your five. [He's|She's] playing it now, in a sense. It has a saxophone.")
         elif money < 5:
-            game.print("He wants five. You have less. He turns the record over without looking at you.")
+            game.print("[He|She] wants five. You have less. [He|She] turns the record over without looking at you.")
         else:
             game.vars["money"] = money - 5
             game.award("tip_dj")
             game.print(
                 "You slide five dollars onto the booth. The DJ nods, once, and the next song has a "
-                "saxophone in it. This time it's for you. Ginger, at her table, looks up."
+                "saxophone in it. This time it's for you. [Ginger], at [her|his] table, looks up."
             )
 
     def _talk(self, game: Game) -> None:
         if game.flags.get("ginger_married"):
-            game.print("Ginger's table is empty. You married her; she's at the penthouse, and you know it.")
+            game.print(
+                "[Ginger]'s table is empty. You married [her|him]; [she's|he's] at the penthouse, and you know it."
+            )
         elif not self._near_ginger(game):
-            game.print("You'd have to go over to her table. Shouting across a disco is how fights start.")
+            game.print("You'd have to go over to [her|his] table. Shouting across a disco is how fights start.")
         elif game.flags.get("ginger_danced"):
             game.print(
-                '"A girl like me needs a ring, Paul. A real one." She looks at your hand, '
+                '"A [girl|guy] like me needs a ring, [Paul]. A real one." [She|He] looks at your hand, '
                 'then at the door. "The chapel on Fifth does walk-ins. Bring a ring, and '
                 "we'll see about the rest of your evening.\""
             )
         elif game.flags.get("ginger_wine"):
-            game.print('"You dance?" says Ginger, and it is not rhetorical, and it is not a no.')
+            game.print('"You dance?" says [Ginger], and it is not rhetorical, and it is not a no.')
         elif game.flags.get("ginger_candy"):
-            game.print('"Chocolates are a start," she says. "A girl gets thirsty, though. Just saying."')
+            game.print('"Chocolates are a start," [she|he] says. "A [girl|guy] gets thirsty, though. Just saying."')
         else:
             game.print(
-                '"Hi," says Ginger, without moving anything but her eyebrows. "Big night?" '
-                'She takes in the suit. "Sure. Sure it is."'
+                '"Hi," says [Ginger], without moving anything but [her|his] eyebrows. "Big night?" '
+                '[She|He] takes in the suit. "Sure. Sure it is."'
             )
 
     def _give(self, game: Game, item: str) -> None:
         if not game.has(item):
             game.print(f"You don't have any {item}. You'd have noticed; it would be the best thing you own.")
         elif not self._near_ginger(game):
-            game.print("Take it over to her. Gifts thrown across a dance floor are a cry for help.")
+            game.print("Take it over to [her|him]. Gifts thrown across a dance floor are a cry for help.")
         elif game.flags.get(f"ginger_{item}"):
-            game.print("She's already had that from you. Variety, Paul. Women like variety, and you've got none.")
+            game.print(
+                "[She's|He's] already had that from you. Variety, [Paul]. "
+                "[Women|Men] like variety, and you've got none."
+            )
         elif item == "wine" and not game.flags.get("ginger_candy"):
-            game.print('"Wine? Before dessert?" She smiles, not unkindly. "Try again, sugar. In the right order."')
+            game.print('"Wine? Before dessert?" [She|He] smiles, not unkindly. "Try again, sugar. In the right order."')
         else:
             game.take(item)
             game.flags[f"ginger_{item}"] = True
             if item == "candy":
                 game.award("ginger_candy")
                 game.print(
-                    "Ginger opens the heart-shaped box, counts the missing ones, and eats "
-                    'a third. "Well," she says, "you\'re trying. I like trying."'
+                    "[Ginger] opens the heart-shaped box, counts the missing ones, and eats "
+                    'a third. "Well," [she|he] says, "you\'re trying. I like trying."'
                 )
             else:
                 game.award("ginger_wine")
                 game.print(
-                    'She turns the bottle to read the label. "Chateau Kwik." She laughs, '
+                    '[She|He] turns the bottle to read the label. "Chateau Kwik." [She|He] laughs, '
                     'properly, for the first time. "You\'re a disaster. Dance with me."'
                 )
 
@@ -363,10 +434,12 @@ class Disco(Room):
             game.print('"One dance a night, honey. I have a rule and a hip."')
             return
         if not game.flags.get("ginger_wine"):
-            game.print('"Dance? With you?" She stirs her drink. "Give me a reason. Two reasons. Bring them here."')
+            game.print(
+                '"Dance? With you?" [She|He] stirs [her|his] drink. "Give me a reason. Two reasons. Bring them here."'
+            )
             return
         if not self._near_ginger(game):
-            game.print("Go and ask her at the table. Nobody dances with a man who shouts from the floor.")
+            game.print("Go and ask [her|him] at the table. Nobody dances with a [man|woman] who shouts from the floor.")
             return
         self.dance_timer = DANCE_CYCLES
         sound.play("disco")
@@ -374,8 +447,8 @@ class Disco(Room):
         game.ego.facing = "right"
         game.ego.frozen = True
         game.print(
-            "Ginger takes your hand and pulls you onto the floor. The lights go wild. "
-            "You dance like a man who has read about it. She dances like she invented it."
+            "[Ginger] takes your hand and pulls you onto the floor. The lights go wild. "
+            "You dance like a [man|woman] who has read about it. [She|He] dances like [she|he] invented it."
         )
 
     def _dance_over(self, game: Game) -> None:
@@ -384,7 +457,7 @@ class Disco(Room):
         game.flags["ginger_danced"] = True
         game.award("ginger_dance")
         game.print(
-            "The song ends. Ginger is flushed and, for a moment, looking at you like you "
-            'are a person. "Here\'s the thing, Paul." She holds up her left hand. "No ring. '
-            'A girl like me needs a ring. Get one, and meet me at the chapel on Fifth."'
+            "The song ends. [Ginger] is flushed and, for a moment, looking at you like you "
+            'are a person. "Here\'s the thing, [Paul]." [She|He] holds up [her|his] left hand. "No ring. '
+            'A [girl|guy] like me needs a ring. Get one, and meet me at the chapel on Fifth."'
         )

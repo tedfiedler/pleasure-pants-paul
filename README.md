@@ -14,6 +14,7 @@ uv sync
 uv run ppp              # title -> age quiz -> game
 uv run ppp --skip-quiz  # straight into room 10
 uv run ppp --scale 4    # bigger window (integer scale, default 3)
+uv run ppp --pauline    # the same night out, as Pauline (see below)
 ```
 
 Walk with the arrow keys (press the same arrow again to stop, like the
@@ -46,6 +47,25 @@ Saved games are JSON files, twelve most recent kept, in:
 | Linux | `$XDG_DATA_HOME/PleasurePantsPaul/saves` |
 
 Set `PPP_SAVE_DIR` to override.
+
+## Pleasure Pants Pauline
+
+![Pauline outside Rooster's](docs/images/pauline-street.png)
+
+`--pauline` plays the whole game from the other side of the mirror. You are
+Pauline, in a white polyester pantsuit, and every gendered character in town
+swaps with you: Dolores is Donny, Ginger is Rusty, Hope is Chance, Dawn is
+Dusty, Brick is Roxy, the bartender is a big woman with forearms like hams,
+and the door at the back of Rooster's says LADIES. The title screen, the
+sprites, the jokes and the ending change to match. The puzzles, points and
+map don't, so the guide below works for both; read "she" for "he" as needed.
+
+The parser's vocabulary swaps too. As Pauline, `talk to man` is the one
+you're chasing and `look at lady` is the drunk in the booth; `donny`,
+`rusty`, `roxy` and friends are words, `dolores` and `ginger` aren't.
+
+A saved game remembers whose game it is, so restoring a Pauline save plays
+as Pauline with or without the flag.
 
 ## Player's guide
 
@@ -347,13 +367,14 @@ The engine reproduces the AGI model rather than emulating it:
 src/ppp/
   main.py      window, main loop, title/quiz/play states
   game.py      state, scoring, inventory, command dispatch, global verbs
+  cast.py      who's who in each version, and the [Paul|Pauline] text markup
   room.py      Room base class (draw, enter, update, said, looks)
   rooms/       one file per room; register() lists them
   sprite.py    ASCII-art to surface, shared by Paul and room objects
   pic.py       Picture: visual + priority screens and drawing commands
-  ego.py       Paul's sprite frames, movement, priority-aware blit
+  ego.py       Paul's and Pauline's sprite frames, movement, priority-aware blit
   parser.py    tokeniser and said() matcher
-  words.py     vocabulary groups
+  words.py     vocabulary groups, and the ones that swap for Pauline
   ui.py        status line, prompt, message box, text pages
   sound.py     square-wave synth and the tunes; play(name) is a no-op without a mixer
   menu.py      menu bar definition, navigation, drawing, F-key shortcuts

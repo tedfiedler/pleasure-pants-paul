@@ -7,6 +7,7 @@ from collections import deque
 from dataclasses import dataclass, field
 
 from ppp import sound
+from ppp.cast import render
 from ppp.const import PIC_H, PIC_W
 from ppp.ego import Ego
 from ppp.parser import Parsed, parse
@@ -101,14 +102,14 @@ START_MONEY = 94
 SPEEDS: dict[str, int] = {"slow": 10, "normal": 20, "fast": 40, "fastest": 80}
 
 DUMB_REPLIES = [
-    "That wouldn't accomplish anything, Paul.",
+    "That wouldn't accomplish anything, [Paul].",
     "You can't do that. Not in those pants.",
     "Nice idea. Doesn't work.",
-    "Paul thinks about it, then thinks better of it.",
+    "[Paul] thinks about it, then thinks better of it.",
     "Nothing happens. Story of your life.",
 ]
 
-DIRECTION_REPLY = "Use the arrow keys to walk. The keyboard was invented for a reason, Paul."
+DIRECTION_REPLY = "Use the arrow keys to walk. The keyboard was invented for a reason, [Paul]."
 
 
 @dataclass
@@ -129,14 +130,26 @@ class Game:
     cycle_count: int = 0
     scored: set[str] = field(default_factory=set)
     rng: random.Random = field(default_factory=random.Random, repr=False)
+    pauline: bool = False  # the mirror-image game: see ppp.cast
 
     def __post_init__(self) -> None:
         self.vars.setdefault("money", START_MONEY)
+        self.ego.pauline = self.pauline
+
+    def set_pauline(self, pauline: bool) -> None:
+        """Switch versions, as a restored game may. The next new_room redraws in kind."""
+        self.pauline = pauline
+        self.ego.pauline = pauline
+        self.ego.frames = {}
 
     # -- output ----------------------------------------------------------
 
+    def tr(self, text: str) -> str:
+        """Resolve cast markup for the version of the game being played."""
+        return render(text, self.pauline)
+
     def print(self, text: str) -> None:
-        self.messages.append(text)
+        self.messages.append(self.tr(text))
 
     @property
     def message(self) -> str | None:
@@ -194,7 +207,7 @@ class Game:
     def new_room(self, number: int) -> None:
         prev = self.room.number if self.room else None
         room = self.rooms[number]
-        self.pic = Picture()
+        self.pic = Picture(self.pauline)
         room.draw(self.pic)
         self.room = room
         self.ego.frozen = False
@@ -259,7 +272,7 @@ class Game:
     def handle_input(self, text: str) -> None:
         if self.room is None or self.dead:
             return
-        p = parse(text)
+        p = parse(text, self.pauline)
         if p.empty:
             return
         if self.room.said(self, p):
@@ -279,8 +292,8 @@ class Game:
             self.print(self.room.description)
         elif p.said("look", "self"):
             self.print(
-                "You are Paul. Forty-something, balding, and wearing a white polyester "
-                "leisure suit that was fashionable once, briefly, somewhere else. "
+                "You are [Paul]. Forty-something, [balding|big-haired], and wearing a white polyester "
+                "[leisure suit|pantsuit] that was fashionable once, briefly, somewhere else. "
                 "The pants are the pleasure part. Allegedly."
             )
         elif p.said("inventory"):
@@ -289,7 +302,7 @@ class Game:
             self.print(f"You have scored {self.score} out of a possible {MAX_SCORE} points.")
         elif p.said("help"):
             self.print(
-                "Type what you want Paul to do, like LOOK AT BAR or TALK TO BARTENDER. "
+                "Type what you want [Paul] to do, like LOOK AT BAR or TALK TO BARTENDER. "
                 "Walk with the arrow keys. Press ESC for the menu. Try everything. Twice."
             )
         elif p.said("quit"):
@@ -305,7 +318,7 @@ class Game:
         elif p.said("money") or p.said("look", "money") or p.said("look", "money", "rol"):
             self.print(f"You have ${self.vars.get('money', 0)}. It's not a fortune. It's barely a rumour of one.")
         elif p.said("wait"):
-            self.print("Time passes. Paul does not get any younger, or any cooler.")
+            self.print("Time passes. [Paul] does not get any younger, or any cooler.")
         elif p.said("look", "floor"):
             self.print("It's a floor. It does the thing floors do.")
         elif p.said("look", "wall"):
@@ -315,11 +328,11 @@ class Game:
         elif p.said("get", "rol") and p.unknown is None:
             self.print("You can't take that. Believe me, you'd regret it anyway.")
         elif p.said("talk", "self") or p.said("talk"):
-            self.print("Paul mutters something encouraging to himself. It doesn't help.")
+            self.print("[Paul] mutters something encouraging to [himself|herself]. It doesn't help.")
         elif p.said("kiss", "self"):
-            self.print("Paul puckers up. There's nobody there. Just like high school.")
+            self.print("[Paul] puckers up. There's nobody there. Just like high school.")
         elif p.said("dance"):
-            self.print("Paul does a little shuffle. Somewhere, a disco ball weeps.")
+            self.print("[Paul] does a little shuffle. Somewhere, a disco ball weeps.")
         else:
             return False
         return True

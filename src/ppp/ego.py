@@ -3,6 +3,9 @@
 Frames are ASCII art in 160-wide picture coordinates. Legend:
   .  transparent   h hair (black)   f face (light red)   w suit (white)
   k  shirt/belt (black)   g gold chain (yellow)   b shoes (brown)
+
+Pauline, his mirror image, has her own frames in the same layout: big hair,
+a pink blouse (p) under the white pantsuit, bell-bottoms, and red heels (b).
 """
 
 from __future__ import annotations
@@ -11,11 +14,12 @@ from dataclasses import dataclass, field
 
 import pygame
 
-from ppp.const import BLACK, BROWN, LRED, PIC_H, PIC_W, WHITE, YELLOW, priority_for_y
+from ppp.const import BLACK, BROWN, LMAGENTA, LRED, PIC_H, PIC_W, RED, WHITE, YELLOW, priority_for_y
 from ppp.pic import Picture
 from ppp.sprite import from_rows, rows_of
 
 LEGEND = {"h": BLACK, "f": LRED, "w": WHITE, "k": BLACK, "g": YELLOW, "b": BROWN}
+PAULINE_LEGEND = {**LEGEND, "p": LMAGENTA, "b": RED}
 
 # Paul is balding: flesh on top, hair at the sides and back.
 _HEAD_FRONT = """
@@ -137,13 +141,128 @@ bb....bb
 bb....bb
 """
 
+_PAULINE_HEAD_FRONT = """
+.hhhhhh.
+hhffffhh
+hhffffhh
+hhkffkhh
+hhffffhh
+.h.ff.h.
+"""
+_PAULINE_HEAD_BACK = """
+.hhhhhh.
+hhhhhhhh
+hhhhhhhh
+hhhhhhhh
+hhhhhhhh
+.hhhhhh.
+"""
+_PAULINE_HEAD_SIDE = """
+.hhhhh..
+hhhfff..
+hhhkff..
+hhhfff..
+hhhff...
+.hhff...
+"""
+# arms hang clear of a narrower waist
+_PAULINE_TORSO_FRONT = """
+.wwppww.
+wwwppwww
+wwwgpwww
+wwwwwwww
+w.wwww.w
+w.wwww.w
+w.wwww.w
+f.wwww.f
+..wwww..
+.kkkkkk.
+.wwwwww.
+"""
+_PAULINE_TORSO_BACK = """
+.whhhhw.
+wwwhhwww
+wwwwwwww
+wwwwwwww
+w.wwww.w
+w.wwww.w
+w.wwww.w
+f.wwww.f
+..wwww..
+.kkkkkk.
+.wwwwww.
+"""
+_PAULINE_TORSO_SIDE = """
+.hwwww..
+..wwpw..
+..wwgww.
+..wwwww.
+..wwww..
+..wwww..
+..wwwww.
+..wwwwf.
+..wwww..
+..kkkk..
+..wwwww.
+"""
+# bell-bottoms: the flare sits on top of the heels
+_PAULINE_LEGS_FRONT_A = """
+.ww..ww.
+.ww..ww.
+.ww..ww.
+.ww..ww.
+.ww..ww.
+.ww..ww.
+.ww..ww.
+.ww..ww.
+www..www
+www..www
+.bb..bb.
+"""
+_PAULINE_LEGS_FRONT_B = """
+.ww..ww.
+.ww..ww.
+.ww..ww.
+.ww..ww.
+.ww..ww.
+.ww..www
+.ww..www
+.ww..bb.
+www.....
+www.....
+.bb.....
+"""
+_PAULINE_LEGS_FRONT_C = "\n".join(r[::-1] for r in _PAULINE_LEGS_FRONT_B.split("\n"))
+_PAULINE_LEGS_SIDE_A = """
+..wwww..
+..wwww..
+..wwww..
+..wwww..
+..wwww..
+..wwww..
+..wwww..
+..wwww..
+.wwwwww.
+.wwwwww.
+..bbbbb.
+"""
+_PAULINE_LEGS_SIDE_B = """
+..wwww..
+.www.ww.
+.ww..ww.
+.ww...ww
+.ww...ww
+ww....ww
+ww....ww
+ww....ww
+www..www
+www..www
+bb....bb
+"""
+
 
 def _frame(head: str, torso: str, legs: str) -> list[str]:
     return rows_of(head, 8) + rows_of(torso, 8) + rows_of(legs, 8)
-
-
-def _surface(rows: list[str], mirror: bool = False) -> pygame.Surface:
-    return from_rows(rows, LEGEND, mirror)
 
 
 # AGI directions: 0 stop, 1 N, 2 NE, 3 E, 4 SE, 5 S, 6 SW, 7 W, 8 NW
@@ -160,16 +279,28 @@ DIR_DELTA: dict[int, tuple[int, int]] = {
 }
 
 
-def _build_frames() -> dict[str, list[pygame.Surface]]:
-    front_cycle = (_LEGS_FRONT_A, _LEGS_FRONT_B, _LEGS_FRONT_A, _LEGS_FRONT_C)
-    down = [_frame(_HEAD_FRONT, _TORSO_FRONT, legs) for legs in front_cycle]
-    up = [_frame(_HEAD_BACK, _TORSO_BACK, legs) for legs in front_cycle]
-    right = [_frame(_HEAD_SIDE, _TORSO_SIDE, _LEGS_SIDE_A), _frame(_HEAD_SIDE, _TORSO_SIDE, _LEGS_SIDE_B)]
+def _build_frames(pauline: bool = False) -> dict[str, list[pygame.Surface]]:
+    if pauline:
+        legend = PAULINE_LEGEND
+        heads = (_PAULINE_HEAD_FRONT, _PAULINE_HEAD_BACK, _PAULINE_HEAD_SIDE)
+        torsos = (_PAULINE_TORSO_FRONT, _PAULINE_TORSO_BACK, _PAULINE_TORSO_SIDE)
+        front_a, front_b, front_c = _PAULINE_LEGS_FRONT_A, _PAULINE_LEGS_FRONT_B, _PAULINE_LEGS_FRONT_C
+        side_a, side_b = _PAULINE_LEGS_SIDE_A, _PAULINE_LEGS_SIDE_B
+    else:
+        legend = LEGEND
+        heads = (_HEAD_FRONT, _HEAD_BACK, _HEAD_SIDE)
+        torsos = (_TORSO_FRONT, _TORSO_BACK, _TORSO_SIDE)
+        front_a, front_b, front_c = _LEGS_FRONT_A, _LEGS_FRONT_B, _LEGS_FRONT_C
+        side_a, side_b = _LEGS_SIDE_A, _LEGS_SIDE_B
+    front_cycle = (front_a, front_b, front_a, front_c)
+    down = [_frame(heads[0], torsos[0], legs) for legs in front_cycle]
+    up = [_frame(heads[1], torsos[1], legs) for legs in front_cycle]
+    right = [_frame(heads[2], torsos[2], side_a), _frame(heads[2], torsos[2], side_b)]
     return {
-        "down": [_surface(f) for f in down],
-        "up": [_surface(f) for f in up],
-        "right": [_surface(f) for f in right],
-        "left": [_surface(f, mirror=True) for f in right],
+        "down": [from_rows(f, legend) for f in down],
+        "up": [from_rows(f, legend) for f in up],
+        "right": [from_rows(f, legend) for f in right],
+        "left": [from_rows(f, legend, mirror=True) for f in right],
     }
 
 
@@ -194,11 +325,12 @@ class Ego:
     anim_tick: int = 0
     visible: bool = True
     frozen: bool = False  # true while a cutscene or message holds him
+    pauline: bool = False  # which set of frames to wear
     frames: dict[str, list[pygame.Surface]] = field(default_factory=dict, repr=False)
 
     def ensure_frames(self) -> None:
         if not self.frames:
-            self.frames = _build_frames()
+            self.frames = _build_frames(self.pauline)
 
     @property
     def width(self) -> int:

@@ -34,7 +34,7 @@ class Bar(Room):
         "Rooster's, in all its glory. A long bar runs along the back wall with a "
         "bartender behind it polishing a glass that will never be clean. A drunk "
         "slumps in the booth on the right. A jukebox glows in the corner. A door at "
-        "the back is marked MEN. The exit is at the bottom of the screen."
+        "the back is marked [MEN|LADIES]. The exit is at the bottom of the screen."
     )
     horizon = 100
     edges = {"bottom": 10}
@@ -42,12 +42,12 @@ class Bar(Room):
     looks = {
         "bar": "A scarred wooden bar, sticky in places you don't want to think about. "
         "Behind it: bottles, a mirror, and the bartender.",
-        "bartender": "A big man with forearms like hams and a towel over one shoulder. He "
-        "looks like he has heard every line you're about to try.",
-        "drunk": "A gentleman of the old school, if the old school was a bus station. He is "
-        "nursing an empty glass and mumbling about his 'shows'. His coat pocket bulges.",
+        "bartender": "[A big man|A big woman] with forearms like hams and a towel over one shoulder. [He|She] "
+        "looks like [he|she] has heard every line you're about to try.",
+        "drunk": "[A gentleman|A lady] of the old school, if the old school was a bus station. [He|She] is "
+        "nursing an empty glass and mumbling about [his|her] 'shows'. [His|Her] coat pocket bulges.",
         "jukebox": "A jukebox with a cracked chrome front. Every song on it is by someone's cousin.",
-        "door": "A door on the right marked MEN. It stands ajar, breathing. Walk up to it to go in.",
+        "door": "A door on the right marked [MEN|LADIES]. It stands ajar, breathing. Walk up to it to go in.",
         "stool": "Bar stools, bolted to the floor, which tells you about the clientele.",
         "whiskey": "A shot of house whiskey. It's the colour of old pennies and smells like a campfire in a tyre yard.",
         "money": "You have some cash in your wallet. Less than you'd like.",
@@ -108,7 +108,7 @@ class Bar(Room):
 
         if p.said("talk", "bartender") or p.said("talk", "bartender", "rol"):
             if not near_bar:
-                game.print("He can't hear you from there. Walk up to the bar.")
+                game.print("[He|She] can't hear you from there. Walk up to the bar.")
             else:
                 game.award("talk_bartender")
                 game.print('"You want something, or you just here to shine?"')
@@ -128,18 +128,21 @@ class Bar(Room):
             self._give_whiskey(game, near_drunk)
         elif p.said("talk", "drunk") or p.said("talk", "drunk", "rol"):
             if not near_drunk:
-                game.print("He's too far away, and he isn't coming to you.")
+                game.print("[He's|She's] too far away, and [he|she] isn't coming to you.")
             elif game.flags.get("drunk_paid"):
-                game.print('"Wonderful fella. Wonderful. Nother round when you get a minute."')
+                game.print('"Wonderful [fella|gal]. Wonderful. Nother round when you get a minute."')
             else:
-                game.print('"Hey. Hey pal. Pal. My glass has a hole in the top." He waggles it. It is very empty.')
+                game.print(
+                    '"Hey. Hey [pal. Pal|hon. Hon]. My glass has a hole in the top." '
+                    "[He|She] waggles it. It is very empty."
+                )
         elif p.said("get", "remote") or p.said("get", "remote", "rol"):
             if game.has("remote"):
                 game.print("You already have it. Don't get greedy.")
             elif not near_drunk:
-                game.print("What remote? Get closer to the gentleman in the booth and think again.")
+                game.print("What remote? Get closer to the [gentleman|lady] in the booth and think again.")
             else:
-                game.print("He's sitting on the pocket. You'd need a distraction, or a bribe.")
+                game.print("[He's|She's] sitting on the pocket. You'd need a distraction, or a bribe.")
         elif p.said("look", "drunk", "rol") or p.said("look", "pocket"):
             game.print(self.looks["drunk"])
         elif p.said("play", "jukebox") or p.said("push", "jukebox") or p.said("use", "jukebox"):
@@ -152,7 +155,7 @@ class Bar(Room):
             or p.said("enter", "bathroom")
             or p.said("use", "bathroom")
         ):
-            game.print("Walk up to the door marked MEN. It's on the right, past the booth. Follow the smell.")
+            game.print("Walk up to the door marked [MEN|LADIES]. It's on the right, past the booth. Follow the smell.")
         elif p.said("sit", "rol") or p.said("sit"):
             game.print("You perch on a stool. It wobbles. So do you.")
         elif p.said("look", "money") or p.said("look", "wallet") or p.said("money"):
@@ -174,33 +177,34 @@ class Bar(Room):
         if not near_bar:
             game.print("Pay for what? Walk up to the bar first, big spender.")
         elif "tip_bartender" in game.scored:
-            game.print("You've tipped. He remembers. He remembers everything, and it doesn't help.")
+            game.print("You've tipped. [He|She] remembers. [He|She] remembers everything, and it doesn't help.")
         elif money < 1:
-            game.print("You'd tip if you had a dollar. You don't. He can tell from the door.")
+            game.print("You'd tip if you had a dollar. You don't. [He|She] can tell from the door.")
         else:
             game.vars["money"] = money - 1
             game.award("tip_bartender")
             game.print(
                 'You leave a dollar on the bar. The bartender looks at it, then at you. "Big night," '
-                "he says, and for the first time the towel stops moving."
+                "[he|she] says, and for the first time the towel stops moving."
             )
 
     def _buy_whiskey(self, game: Game, near_bar: bool) -> None:
         if not near_bar:
-            game.print("Get up to the bar first. He doesn't deliver.")
+            game.print("Get up to the bar first. [He|She] doesn't deliver.")
             return
         if game.has("whiskey"):
             game.print("You've already got one. Pace yourself; it's a long game.")
             return
         money = game.vars.get("money", START_MONEY)
         if money < WHISKEY_PRICE:
-            game.print('"No money, no whiskey." He goes back to the glass.')
+            game.print('"No money, no whiskey." [He|She] goes back to the glass.')
             return
         game.vars["money"] = money - WHISKEY_PRICE
         game.give("whiskey")
         game.award("buy_whiskey")
         game.print(
-            f'He slides a shot across the bar. "Ten bucks." You pay. You now have ${game.vars["money"]} and a whiskey.'
+            '[He|She] slides a shot across the bar. "Ten bucks." You pay. '
+            f"You now have ${game.vars['money']} and a whiskey."
         )
 
     def _give_whiskey(self, game: Game, near_drunk: bool) -> None:
@@ -208,14 +212,14 @@ class Bar(Room):
             game.print("You'd need a whiskey to give. Funny how that works.")
             return
         if not near_drunk:
-            game.print("You'll have to bring it over to him. He's not a self-serve kind of guy.")
+            game.print("You'll have to bring it over to [him|her]. [He's|She's] not a self-serve kind of [guy|gal].")
             return
         game.take("whiskey")
         game.flags["drunk_paid"] = True
         game.give("remote")
         game.award("remote")
         game.print(
-            'His eyes go wide. "Pal!" He drains it in one go, fishes in his coat, and '
+            '[His|Her] eyes go wide. "[Pal|Hon]!" [He|She] drains it in one go, fishes in [his|her] coat, and '
             "presses something into your hand. It's a TV remote control. \"Never lose "
-            'your shows," he says, and slides under the table.'
+            'your shows," [he|she] says, and slides under the table.'
         )

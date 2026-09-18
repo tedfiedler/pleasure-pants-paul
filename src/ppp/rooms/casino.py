@@ -77,15 +77,15 @@ class Casino(Room):
         "question. A pull costs five dollars. Try PULL LEVER.",
         "blackjack": "A kidney-shaped table in green felt with a dealer behind it and "
         "chips in a rack. Bets from $5 to $100. Try PLAY BLACKJACK.",
-        "dealer": "The dealer has a bow tie, a name tag that says CHANCE, and hands that "
+        "dealer": "The dealer has a bow tie, a name tag that says [CHANCE|HOPE], and hands that "
         "move like they're being paid by the card. They are.",
-        "prize": "A glass case with a pen set, a clock radio, a bottle of aftershave, and "
+        "prize": "A glass case with a pen set, a clock radio, a bottle of [aftershave|perfume], and "
         "one diamond ring on a velvet finger. The ring is $250. The rest is free "
         "with the ring.",
         "ring": "A diamond ring, diamond in the sense of shiny, in a glass case. $250. "
-        "Ginger would not ask where it came from.",
-        "clerk": "A woman behind the prize counter in a gold vest, reading a paperback "
-        "with a duke on the cover. She sells one ring a year and it's not October.",
+        "[Ginger] would not ask where it came from.",
+        "clerk": "A [woman|man] behind the prize counter in a gold vest, reading a paperback "
+        "with a [duke|duchess] on the cover. [She|He] sells one ring a year and it's not October.",
         "lounge": "A padded door marked LOUNGE. A sign: TONIGHT! COMEDY! (SOLD OUT). Someone has added: THANK GOD.",
         "elevator": "Brass elevator doors. A sign says PENTHOUSE, and, below it, a keyhole where the button should be.",
         "floor": "Red carpet with a gold pattern that hides everything except your losses.",
@@ -135,7 +135,7 @@ class Casino(Room):
         pic.pixel(147, 72, WHITE)  # the ring
         pic.pixel(148, 71, YELLOW)
         pic.rect(122, 82, 32, 16, BLACK)
-        draw_person(pic, 134, 34, suit=YELLOW, skin=LRED, hair=BLACK)
+        draw_person(pic, 134, 34, suit=YELLOW, skin=LRED, hair=BLACK, female=True)
         # lounge door, elevator and staff stairs along the back wall
         pic.rect(6, 10, 22, 38, BLUE)
         pic.rect(8, 16, 18, 6, WHITE)
@@ -154,7 +154,7 @@ class Casino(Room):
         if not game.flags.get("seen_casino"):
             game.flags["seen_casino"] = True
             game.print(
-                "Bells, lights, carpet. A cocktail waitress passes without seeing you, "
+                "Bells, lights, carpet. A cocktail [waitress|waiter] passes without seeing you, "
                 "which is a skill. Somewhere a slot machine pays out for someone else."
             )
 
@@ -179,11 +179,13 @@ class Casino(Room):
         elif p.said("buy", "ring") or p.said("buy", "ring", "rol") or p.said("buy", "prize"):
             self._buy_ring(game)
         elif p.said("buy", "rol") or p.said("buy"):
-            game.print('"The ring, or nothing," says the prize lady. "The clock radio\'s a display model. So am I."')
+            game.print(
+                '"The ring, or nothing," says the prize [lady|gent]. "The clock radio\'s a display model. So am I."'
+            )
         elif p.has("steal") or (p.has("chip") and p.verb == "get" and at_table):
             game.die(
                 "You reach for the chips. A hand the size of a dinner plate lands on your "
-                "shoulder. The pit boss walks you to a small room with no windows. Paul "
+                "shoulder. The pit boss walks you to a small room with no windows. [Paul] "
                 "is later found to have left town, in the sense that matters."
             )
         elif p.has("cashout") or (p.has("chip", "money") and p.verb in ("get", "cashout", "money")):
@@ -191,7 +193,10 @@ class Casino(Room):
         elif p.said("talk", "dealer") or p.said("talk", "dealer", "rol"):
             game.print('"Place your bets," says the dealer, to no one, to you, to the room.')
         elif p.said("talk", "clerk") or p.said("talk", "clerk", "rol") or p.said("talk"):
-            game.print('"Ring\'s two-fifty," says the prize lady, not looking up. "Duke\'s about to propose. Hush."')
+            game.print(
+                '"Ring\'s two-fifty," says the prize [lady|gent], not looking up. '
+                '"[Duke|Duchess]\'s about to propose. Hush."'
+            )
         elif p.has("lounge") and p.verb in ("open", "enter", "use"):
             if not self.near(game, 2, 34):
                 game.print("The lounge door is at the back left. Walk over.")
@@ -215,13 +220,16 @@ class Casino(Room):
                 game.new_room(25)
             elif game.flags.get("honeymoon_done"):
                 game.print(
-                    "The keyhole. She took the key. The desk clerk says the "
+                    "The keyhole. [She|He] took the key. The desk clerk says the "
                     "penthouse is 'occupied' and looks at you with pity."
                 )
             else:
                 game.print("No button, only a keyhole. Whoever lives up there doesn't want visitors. Yet.")
         elif p.said("smell"):
-            game.print("Cigars, carpet shampoo, and the sweet cologne of a man who just won and won't again.")
+            game.print(
+                "Cigars, carpet shampoo, and the sweet [cologne of a man|perfume of a woman] "
+                "who just won and won't again."
+            )
         elif p.said("listen"):
             game.print("Bells, chips, the shuffle of cards, and under it a saxophone. There's always a saxophone.")
         else:
@@ -331,7 +339,7 @@ class Casino(Room):
             return True
         if p.verb in ("drop", "enter", "stand") and (len(p.words) == 1 or p.has("blackjack", "stool")):
             if in_hand:
-                game.print("Finish the hand. The dealer's eyes say so, and so does the man by the door.")
+                game.print("Finish the hand. The dealer's eyes say so, and so does the [man|woman] by the door.")
             else:
                 self.bj = None
                 game.print(f"You leave the table with ${game.vars.get('money', 0)}, which is a number, and a lesson.")
@@ -380,15 +388,15 @@ class Casino(Room):
         if game.vars.get("money", 0) >= 500 and "high_roller" not in game.scored:
             game.award("high_roller")
             game.print(
-                "A cocktail waitress appears at your elbow with a drink you didn't order. \"Compliments "
-                'of the house, sir." Sir. You have five hundred dollars and, briefly, a title.'
+                "A cocktail [waitress|waiter] appears at your elbow with a drink you didn't order. \"Compliments "
+                "of the house, [sir|ma'am].\" [Sir|Ma'am]. You have five hundred dollars and, briefly, a title."
             )
 
     # -- the ring ------------------------------------------------------------------
 
     def _buy_ring(self, game: Game) -> None:
         if not self.near(game, 116, 160):
-            game.print("The prize counter is on the right. Walk over; the lady won't shout prices.")
+            game.print("The prize counter is on the right. Walk over; the [lady|gent] won't shout prices.")
             return
         if game.has("ring"):
             game.print("You have the ring. One is traditional. Two is a conversation you don't want.")
@@ -396,7 +404,7 @@ class Casino(Room):
         money = game.vars.get("money", 0)
         if money < RING_PRICE:
             game.print(
-                f'"Two hundred and fifty." You have ${money}. "The tables are that way," she says, kindly, '
+                f'"Two hundred and fifty." You have ${money}. "The tables are that way," [she|he] says, kindly, '
                 "which is worse."
             )
             return
@@ -404,7 +412,7 @@ class Casino(Room):
         game.give("ring")
         game.award("ring")
         game.print(
-            f"You count out ${RING_PRICE}. The prize lady lifts the ring from its velvet finger "
-            'and drops it in your palm. "Congratulations," she says, "or condolences. It\'s '
+            f"You count out ${RING_PRICE}. The prize [lady|gent] lifts the ring from its velvet finger "
+            'and drops it in your palm. "Congratulations," [she|he] says, "or condolences. It\'s '
             f'the same box." You have ${game.vars["money"]} left.'
         )
