@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from ppp import sound
 from ppp.const import (
     BLACK,
     BROWN,
@@ -143,6 +144,7 @@ class Bar(Room):
             game.print(self.looks["drunk"])
         elif p.said("play", "jukebox") or p.said("push", "jukebox") or p.said("use", "jukebox"):
             game.award("jukebox")
+            sound.play("disco")
             game.print("You feed it a quarter. It plays a song about a truck. The drunk weeps.")
         elif (
             p.said("open", "door")

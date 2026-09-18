@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pygame
 
+from ppp import sound
 from ppp.const import (
     BLACK,
     BLUE,
@@ -239,6 +240,7 @@ class Penthouse(Room):
         taken = game.vars.get("money", 0)
         game.vars["money"] = 0
         game.take("key")
+        sound.play("robbed")
         game.ego.visible = False
         game.ego.frozen = True
         game.print("Ginger turns off the lamp. The city glitters. The screen, once again, does the decent thing.")
@@ -287,6 +289,7 @@ class Penthouse(Room):
         return True
 
     def _freed(self, game: Game) -> None:
+        sound.play("ding")
         game.flags["tied_up"] = False
         game.flags["freed"] = True
         game.award("freed")

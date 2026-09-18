@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pygame
 
+from ppp import sound
 from ppp.const import (
     BLACK,
     BROWN,
@@ -185,6 +186,7 @@ class Chapel(Room):
             )
         elif p.said("play", "organ") or p.said("use", "organ"):
             game.award("organ")
+            sound.play("buzz")
             game.print("You press a key. The organ plays a chord that sounds like a question nobody wants answered.")
         elif p.said("dance", "rol") or p.said("dance"):
             if bride:
@@ -265,6 +267,7 @@ class Chapel(Room):
             )
         else:
             game.take("ring")
+            sound.play("wedding")
             game.flags["ginger_married"] = True
             game.give("key")
             game.award("wedding")

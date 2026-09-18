@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from ppp import sound
 from ppp.const import (
     BLACK,
     BLUE,
@@ -210,6 +211,7 @@ class Casino(Room):
             if not self.near(game, 30, 62):
                 game.print("The elevator is at the back, left of centre. Walk up to it.")
             elif game.has("key"):
+                sound.play("ding")
                 game.new_room(25)
             elif game.flags.get("honeymoon_done"):
                 game.print(
@@ -237,11 +239,13 @@ class Casino(Room):
             game.print(f"A pull is ${SLOT_COST}. You have ${money}. The machine, for once, is the one that's sorry.")
             return
         game.vars["money"] = money - SLOT_COST
+        sound.play("spin")
         reels = game.rng.choices(SLOT_SYMBOLS, weights=SLOT_WEIGHTS, k=3)
         line = " ".join(SLOT_LOOK[r] for r in reels)
         win = 0
         if reels[0] == reels[1] == reels[2]:
             win = SLOT_PAYS[reels[0]]
+            sound.play("jackpot")
             game.award("jackpot")
         elif reels.count("cherry") == 2:
             win = 10

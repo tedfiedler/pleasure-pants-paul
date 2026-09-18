@@ -330,6 +330,11 @@ The engine reproduces the AGI model rather than emulating it:
 - **Menu bar**: ESC replaces the status line with File / Action / Special /
   Speed, with a white dropdown and inverted selection.
 - **Speed**: slow, normal, fast, fastest = 10, 20, 40, 80 cycles a second.
+- **Sound**: PC-speaker style. Every tune is a list of (note, beats) pairs
+  rendered to a mono square wave at runtime in `sound.py`; there are no
+  audio files. An original title theme, a death jingle, a score blip, a cab
+  horn, slot spins and jackpot bells, an elevator ding, a quiz buzzer, and
+  Mendelssohn in the chapel. F2 toggles it, and saves remember the setting.
 - **Font**: public-domain 8x8 IBM PC bitmap font.
 - **Score** shown as `Score: N of 222`, awarded once per action.
 - **Animated objects**: rooms can return sprites with a baseline, and they
@@ -350,6 +355,7 @@ src/ppp/
   parser.py    tokeniser and said() matcher
   words.py     vocabulary groups
   ui.py        status line, prompt, message box, text pages
+  sound.py     square-wave synth and the tunes; play(name) is a no-op without a mixer
   menu.py      menu bar definition, navigation, drawing, F-key shortcuts
   dialog.py    confirm / text-entry / list-pick modal dialogs
   save.py      JSON save files: snapshot, apply, list, platform save dir

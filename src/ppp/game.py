@@ -6,6 +6,7 @@ import random
 from collections import deque
 from dataclasses import dataclass, field
 
+from ppp import sound
 from ppp.const import PIC_H, PIC_W
 from ppp.ego import Ego
 from ppp.parser import Parsed, parse
@@ -151,6 +152,7 @@ class Game:
 
     def toggle_sound(self) -> None:
         self.sound_on = not self.sound_on
+        sound.enabled = self.sound_on
         self.print(f"Sound is now {'on' if self.sound_on else 'off'}.")
 
     def set_speed(self, speed: str) -> None:
@@ -162,6 +164,7 @@ class Game:
         self.print(text)
         self.dead = True
         self.ego.stop()
+        sound.play("death")
 
     # -- scoring & inventory --------------------------------------------
 
@@ -170,6 +173,7 @@ class Game:
         if key not in self.scored:
             self.scored.add(key)
             self.score += POINTS[key]
+            sound.play("score")
 
     def has(self, item: str) -> bool:
         return item in self.inventory

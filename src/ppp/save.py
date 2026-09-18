@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from ppp import sound
 from ppp.game import Game
 
 APP_DIR = "PleasurePantsPaul"
@@ -65,6 +66,7 @@ def apply(game: Game, data: dict[str, Any]) -> None:
     game.flags = dict(data["flags"])
     game.vars = dict(data["vars"])
     game.sound_on = bool(data["sound_on"])
+    sound.enabled = game.sound_on
     game.speed = str(data.get("speed", "normal"))
     game.cycle_count = int(data.get("cycle_count", 0))
     game.messages.clear()

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pygame
 
+from ppp import sound
 from ppp.const import (
     BLACK,
     BLUE,
@@ -237,6 +238,7 @@ class ExecFloor(Room):
         if not self.near(game, 2, 40, 126):
             game.print("The pool door is on the left. Walk up to it.")
         elif game.has("pass") or game.flags.get("pool_pass"):
+            sound.play("ding")
             game.new_room(28)
         else:
             game.print("Locked. A card reader blinks at you, red. PASS HOLDERS ONLY. You are not a holder of a pass.")

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pygame
 
+from ppp import sound
 from ppp.const import BLACK, LBLUE, LCYAN, PIC_W, RED, WHITE, YELLOW
 from ppp.game import Game
 from ppp.parser import Parsed
@@ -102,6 +103,7 @@ class Curb:
                 self.x = CAB_STOP_X
                 self.state = "waiting"
                 self.timer = 0
+                sound.play("horn")
                 game.print('The cab screeches to a stop at the curb. The driver leans over. "Well?"')
         elif self.state == "waiting":
             self.timer += 1

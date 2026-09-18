@@ -8,7 +8,7 @@ from enum import Enum, auto
 
 import pygame
 
-from ppp import __version__, save
+from ppp import __version__, save, sound
 from ppp.const import BLACK, PALETTE, PIC_H, PIC_TOP, PIC_W, SCREEN_H, SCREEN_W, WHITE, YELLOW
 from ppp.dialog import ConfirmDialog, Dialog, ListDialog, TextDialog
 from ppp.game import MAX_SCORE, Game
@@ -64,6 +64,7 @@ class State(Enum):
 
 class App:
     def __init__(self, scale: int, skip_quiz: bool) -> None:
+        sound.init()
         pygame.init()
         pygame.display.set_caption("Pleasure Pants Paul")
         self.scale = scale
@@ -82,6 +83,8 @@ class App:
         self.pending_death = False  # re-show the death dialog after its message clears
         if skip_quiz:
             self.start_game()
+        else:
+            sound.play("theme")
 
     # -- state transitions ------------------------------------------------
 
@@ -118,6 +121,8 @@ class App:
             if ev.type == pygame.KEYDOWN:
                 self.restart()
                 self.state = State.TITLE
+                sound.stop()
+                sound.play("theme")
         elif self.state == State.PLAY:
             self.handle_play_event(ev)
 
@@ -130,7 +135,9 @@ class App:
         elif self.quiz.feedback is not None:
             self.quiz.next()
         elif ev.unicode and ev.unicode.lower() in "abcd":
+            before = self.quiz.wrong
             self.quiz.answer(ev.unicode)
+            sound.play("buzz" if self.quiz.wrong > before else "ding")
         if self.quiz.done:
             if self.quiz.passed:
                 if self.quiz.wrong == 0 and not self.quiz.skipped:
@@ -159,6 +166,7 @@ class App:
                     self.death_dialog()
                 elif game.flags.get("won") and game.message is None:
                     self.state = State.WON
+                    sound.play("ending")
             return
         if game.dead:
             self.death_dialog()

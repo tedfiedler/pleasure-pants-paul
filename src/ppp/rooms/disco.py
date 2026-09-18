@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pygame
 
+from ppp import sound
 from ppp.const import (
     BLACK,
     BLUE,
@@ -214,6 +215,7 @@ class Disco(Room):
     def enter(self, game: Game, from_room: int | None) -> None:
         super().enter(game, from_room)
         self.dance_timer = 0
+        sound.play("disco")
         if not game.flags.get("seen_disco"):
             game.flags["seen_disco"] = True
             game.print(
@@ -367,6 +369,7 @@ class Disco(Room):
             game.print("Go and ask her at the table. Nobody dances with a man who shouts from the floor.")
             return
         self.dance_timer = DANCE_CYCLES
+        sound.play("disco")
         game.ego.x, game.ego.y = GINGER_FLOOR[0] - 16, GINGER_FLOOR[1]
         game.ego.facing = "right"
         game.ego.frozen = True
