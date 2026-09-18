@@ -102,7 +102,7 @@ def test_cab_ride_pay_and_exit(game: Game) -> None:
     game.new_room(13)
     drain(game)
     game.handle_input("take me to the chapel")
-    assert game.vars["fare"] == 5
+    assert game.vars["fare"] == 5 and game.vars["cab_dest"] == 23
     drain(game)
     game.handle_input("get out")
     assert game.room.number == 13 and "lock" in (game.message or "")
@@ -111,8 +111,10 @@ def test_cab_ride_pay_and_exit(game: Game) -> None:
     assert game.vars["money"] == 15 and game.vars["fare"] == 0
     drain(game)
     game.handle_input("exit")
-    assert game.room.number == 10 and not game.ego.frozen
-    assert street.curb.state == "leaving"
+    assert game.room.number == 23 and not game.ego.frozen
+    assert street.curb.state != "waiting"  # the cab left Rooster's with Paul in it
+    chapel_street = game.room
+    assert chapel_street.objects(game)  # and is pulling away from the chapel curb
     assert (game.ego.x, game.ego.y) == (100, 136)
 
 
@@ -513,6 +515,9 @@ def test_blackjack_hand(game: Game) -> None:
     assert hand_value(["As", "Kd"]) == 21
     assert hand_value(["As", "9d", "5c"]) == 15
     assert hand_value(["Ks", "Qd", "2c"]) == 22
+    import random
+
+    game.rng = random.Random(1)
     game.new_room(22)
     room = game.room
     assert isinstance(room, Casino)
@@ -529,22 +534,20 @@ def test_blackjack_hand(game: Game) -> None:
     game.handle_input("bet 20")
     assert game.vars["money"] == 50  # the stake only moves when the hand settles
     # rig the hand: player 20, dealer 17, then stand
-    room.bj.update({"player": ["Kd", "Qs"], "dealer": ["7h", "Kc"], "deck": ["2c", "2d"]})
+    room.bj.update({"bet": 20, "player": ["Kd", "Qs"], "dealer": ["7h", "Kc"], "deck": ["2c", "2d"]})
     drain(game)
     game.handle_input("stand")
     assert game.vars["money"] == 70 and game.score == 2
     drain(game)
     game.handle_input("bet 10")
-    room.bj.update({"player": ["Kd", "9s"], "dealer": ["7h", "Kc"], "deck": ["2d", "5c"]})
+    room.bj.update({"bet": 10, "player": ["Kd", "9s"], "dealer": ["7h", "Kc"], "deck": ["2d", "5c"]})
     game.handle_input("hit")
     assert game.vars["money"] == 60 and "Bust" in drain(game)[-1]
     # a natural against a dealer 21 is a push; against anything else pays 3:2 rounded up
-    game.handle_input("bet 15")
-    room.bj.update({"player": ["As", "Kd"], "dealer": ["Ah", "Qc"], "deck": ["2c"]})
+    room.bj.update({"bet": 15, "player": ["As", "Kd"], "dealer": ["Ah", "Qc"], "deck": ["2c"]})
     room._settle(game, natural=True)
     assert game.vars["money"] == 60 and "push" in drain(game)[-1].lower()
-    game.handle_input("bet 15")
-    room.bj.update({"player": ["As", "Kd"], "dealer": ["7h", "6c"], "deck": ["2c"]})
+    room.bj.update({"bet": 15, "player": ["As", "Kd"], "dealer": ["7h", "6c"], "deck": ["2c"]})
     room._settle(game, natural=True)
     assert game.vars["money"] == 83 and "7h 6c" in drain(game)[-1]  # dealer did not draw
     # walking out mid-hand costs nothing
@@ -616,3 +619,68 @@ def test_typed_entry_at_open_doors(game: Game) -> None:
     game.ego.x, game.ego.y = 80, 120
     game.handle_input("open door")
     assert game.room.number == 18
+
+
+def test_cab_reaches_the_chapel(game: Game) -> None:
+    game.vars["money"] = 20
+    game.new_room(13)
+    game.handle_input("chapel")
+    game.handle_input("pay")
+    game.handle_input("get out")
+    assert game.room is not None and game.room.number == 23
+    game.ego.x, game.ego.y = 80, 120
+    game.handle_input("enter chapel")
+    assert game.room.number == 24
+
+
+def test_no_bride_no_wedding(game: Game) -> None:
+    game.new_room(24)
+    assert not game.room.objects(game) if game.room else False
+    drain(game)
+    game.ego.x, game.ego.y = 80, 110
+    game.handle_input("marry ginger")
+    assert "Marry whom" in drain(game)[0]
+    game.handle_input("pay preacher")
+    assert "wishing well" in drain(game)[0]
+
+
+def test_wedding_needs_fee_and_ring_then_gives_the_key(game: Game) -> None:
+    game.flags["ginger_danced"] = True
+    game.new_room(24)
+    room = game.room
+    assert room is not None and room.objects(game)  # Ginger at the altar
+    drain(game)
+    game.ego.x, game.ego.y = 80, 110
+    game.vars["money"] = 100
+    game.handle_input("marry ginger")
+    assert "Fifty dollars first" in drain(game)[0]
+    game.handle_input("pay the preacher")
+    assert game.flags["chapel_paid"] and game.vars["money"] == 50
+    drain(game)
+    game.handle_input("give ring to ginger")
+    assert "nothing to put on it" in drain(game)[0]
+    game.give("ring")
+    game.handle_input("marry her")
+    msgs = drain(game)
+    assert len(msgs) == 3 and "pronounce" in msgs[2]
+    assert game.flags["ginger_married"] and game.has("key") and not game.has("ring")
+    assert game.score == 15
+    assert not room.objects(game)  # she has gone ahead
+    game.ego.x, game.ego.y = 20, 110
+    game.handle_input("pull the rope")
+    assert game.score == 16
+    game.handle_input("pull rope")
+    assert game.score == 16
+    # she has left the disco too, and the casino elevator knows the key
+    game.new_room(20)
+    assert game.room is not None and not game.room.objects(game)
+    game.new_room(22)
+    drain(game)
+    game.handle_input("use key")
+    assert "PENTHOUSE" in drain(game)[0]
+
+
+def test_collection_box_is_fatal(game: Game) -> None:
+    game.new_room(24)
+    game.handle_input("take the collection box")
+    assert game.dead

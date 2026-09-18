@@ -192,8 +192,14 @@ class Casino(Room):
                 "The lounge is sold out. You hear a drum roll and a groan. You're not missing anything, "
                 "and it's still sold out."
             )
-        elif p.has("elevator") and p.verb in ("open", "enter", "use", "push", "call"):
-            game.print("No button, only a keyhole. Whoever lives up there doesn't want visitors. Yet.")
+        elif p.has("elevator") and p.verb in ("open", "enter", "use", "push", "call") or p.said("use", "key", "rol"):
+            if game.has("key"):
+                game.print(
+                    "The key fits. The doors open on a brass box, then close, then open again on "
+                    "the same lobby. A sign inside: PENTHOUSE BEING MADE UP. Ginger will have to wait."
+                )
+            else:
+                game.print("No button, only a keyhole. Whoever lives up there doesn't want visitors. Yet.")
         elif p.said("smell"):
             game.print("Cigars, carpet shampoo, and the sweet cologne of a man who just won and won't again.")
         elif p.said("listen"):

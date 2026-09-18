@@ -24,8 +24,9 @@ original). Type commands such as `look`, `look bar`, `talk to bartender`,
 Rooms so far: the street outside Rooster's (10), the bar (11), the alley to
 the west (12), the inside of a cab (13), the men's room (14), the back room
 behind the alley door (15), the room upstairs (16), the Kwik-Snak with its
-own street (17, 18), the Boogie Palace (19, 20) and the Golden Sock Casino
-(21, 22), each with its own street. See the player's guide below.
+own street (17, 18), the Boogie Palace (19, 20), the Golden Sock Casino
+(21, 22) and the Chapel of Eternal Regret (23, 24), each with its own
+street. See the player's guide below.
 
 Alt-X (or Cmd-X on a Mac) skips the age quiz.
 
@@ -140,9 +141,8 @@ down.
 
 ![Inside the cab](docs/images/taxi.png)
 
-Tell the driver where to go: `store`, `disco`, `casino`, `Rooster's` or
-`chapel`. Only the chapel is still behind a plywood fence, and the meter
-runs anyway. `Pay the driver`, then `get out`.
+Tell the driver where to go: `store`, `disco`, `casino`, `chapel` or
+`Rooster's`. All five are real now, and the meter runs anyway. `Pay the driver`, then `get out`.
 Don't try it the other way round.
 
 ### The Kwik-Snak
@@ -172,6 +172,17 @@ with less than that. The tables are that way. Save first; the original
 players did.
 
 ![Blackjack](docs/images/casino-blackjack.png)
+
+### The Chapel of Eternal Regret
+
+![Outside the chapel](docs/images/chapel-street.png)
+
+Walk-ins welcome, no refunds. Once Ginger has asked for a ring she'll be
+waiting at the altar in a veil. The preacher wants fifty dollars and a
+ring, in that order, and then the word. The bell is for after. The
+collection box is for the needy, and they are well defended.
+
+![The wedding](docs/images/chapel-wedding.png)
 
 ### The Boogie Palace
 
@@ -223,9 +234,11 @@ before you do anything clever, and especially before you do anything stupid.
 | 1 | At the Golden Sock: win anything on the slots. |
 | 2 | Win a hand of blackjack. |
 | 5 | At the prize counter, with $250: `buy ring`. |
+| 15 | At the chapel, with Ginger waiting: `pay preacher`, then `marry ginger`. |
+| 1 | Afterwards, by the rope on the left: `pull rope`. |
 
-That is 75 points of a possible 222, all reachable. The chapel is under
-construction.
+That is 91 points of a possible 222, all reachable. Ginger is waiting in
+the Golden Sock penthouse, which is being made up.
 </details>
 
 The screenshots are regenerated with `uv run python tools/screenshots.py`.

@@ -198,6 +198,8 @@ class Disco(Room):
 
     def objects(self, game: Game) -> list[tuple[pygame.Surface, int, int]]:
         out: list[tuple[pygame.Surface, int, int]] = []
+        if game.flags.get("ginger_married"):
+            return out
         if self.dance_timer:
             frame = self.ginger((game.cycle_count // 6) % 2 == 0)
             gx, gy = GINGER_FLOOR
@@ -286,7 +288,9 @@ class Disco(Room):
         return True
 
     def _talk(self, game: Game) -> None:
-        if not self._near_ginger(game):
+        if game.flags.get("ginger_married"):
+            game.print("Ginger's table is empty. You married her; she's at the penthouse, and you know it.")
+        elif not self._near_ginger(game):
             game.print("You'd have to go over to her table. Shouting across a disco is how fights start.")
         elif game.flags.get("ginger_danced"):
             game.print(

@@ -119,6 +119,25 @@ def main() -> int:
     cmd("bet 50", dismiss=False)
     shot("casino-blackjack")
     key(pygame.K_SPACE)
+    game.flags["ginger_danced"] = True
+    game.give("ring")
+    game.vars["money"] = 120
+    game.new_room(23)
+    game.messages.clear()
+    game.ego.x, game.ego.y = 40, 130
+    shot("chapel-street")
+    game.ego.x, game.ego.y = 80, 120
+    game.ego.set_direction(1)
+    cycles(4)
+    game.messages.clear()
+    game.ego.x, game.ego.y = 80, 110
+    shot("chapel")
+    cmd("pay preacher")
+    cmd("marry ginger", dismiss=False)
+    key(pygame.K_SPACE)
+    key(pygame.K_SPACE)
+    shot("chapel-wedding")
+    key(pygame.K_SPACE)
     game.new_room(10)
     game.messages.clear()
     game.ego.x, game.ego.y = 76, 128
