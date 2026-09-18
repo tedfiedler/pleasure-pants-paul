@@ -174,6 +174,7 @@ class Upstairs(Room):
             self._get_candy(game)
         elif p.said("eat", "candy"):
             if game.has("candy"):
+                game.award("eat_candy")
                 game.print(
                     "You eat one. Cherry. You put the lid back on. Somebody else might like these more than you do."
                 )
@@ -232,7 +233,7 @@ class Upstairs(Room):
         else:
             game.take("rose")
             game.flags["rose_given"] = True
-            game.award("give_rose", 2)
+            game.award("give_rose")
             game.print(
                 "Dolores takes the wilted rose and looks at it for a long moment. \"Nobody's "
                 'given me a flower since the Carter administration." She tucks it behind '
@@ -250,7 +251,7 @@ class Upstairs(Room):
             game.print('"Those are mine." Dolores doesn\'t look up from her nail. "Hands, sugar."')
         else:
             game.give("candy")
-            game.award("candy", 3)
+            game.award("candy")
             game.print(
                 "You take the heart-shaped box, lid and all. Somewhere out there is a woman "
                 "who will be impressed by chocolates from a stranger. Statistically."
@@ -288,7 +289,7 @@ class Upstairs(Room):
             game.print('The lamp comes back on. Dolores is already filing a nail. "Thanks, tiger. Mind the stairs."')
             if game.has("protection"):
                 game.take("protection")
-                game.award("dolores", 15)
+                game.award("dolores")
                 game.print(
                     "You get dressed, mostly in the right order. You feel like a new man, "
                     "which is a low bar you have nonetheless cleared."

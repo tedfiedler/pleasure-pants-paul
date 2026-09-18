@@ -23,7 +23,7 @@ from ppp.parser import Parsed
 from ppp.pic import Picture
 from ppp.room import Room
 
-PRICES = {"protection": 5, "wine": 8, "magazine": 3}
+PRICES = {"protection": 5, "wine": 8, "magazine": 3, "lottery": 1}
 
 
 class Store(Room):
@@ -56,6 +56,7 @@ class Store(Room):
         "door": "The glass doors, and the bell above them. The way out is at the bottom of the screen.",
         "sign": "A sign by the register: SHOPLIFTERS WILL BE SHOT. SURVIVORS WILL BE SHOT AGAIN.",
         "money": "You count your money at the counter, which is a mistake in any store.",
+        "lottery": "Lucky Sock scratchers, a dollar each, on a roll by the register. Somebody wins. Nobody you know.",
     }
 
     def draw(self, pic: Picture) -> None:
@@ -136,6 +137,7 @@ class Store(Room):
             game.print(self.looks["protection"])
         elif p.said("read", "magazine") or p.said("look", "magazine", "rol"):
             if game.has("magazine"):
+                game.award("read_magazine")
                 game.print(
                     "You read it for the articles. The articles are also pictures. "
                     "You learn a great deal, none of it useful."
@@ -150,6 +152,8 @@ class Store(Room):
                 )
             else:
                 game.print("Buy it first. This isn't a tasting room; it barely qualifies as a room.")
+        elif p.has("scratch") or (p.has("lottery") and p.verb in ("use", "open", "look")):
+            self._scratch(game)
         elif p.said("eat", "rol"):
             game.print("You are not that hungry. Nobody is that hungry. That's why it's still on the shelf.")
         elif p.said("smell"):
@@ -161,6 +165,21 @@ class Store(Room):
         else:
             return False
         return True
+
+    def _scratch(self, game: Game) -> None:
+        if not game.has("lottery"):
+            game.print("You have nothing to scratch, apart from the obvious, and not in here.")
+            return
+        game.take("lottery")
+        if "lottery" in game.scored:
+            game.print("You scratch. Three socks, one boot. Nothing. The odds were never the point.")
+            return
+        game.vars["money"] = game.vars.get("money", 0) + 25
+        game.award("lottery")
+        game.print(
+            "You scratch with a thumbnail. Sock, sock, sock. Twenty-five dollars. The clerk pays out "
+            f"of the register without a flicker of joy. You have ${game.vars['money']}."
+        )
 
     def _buy(self, game: Game, item: str | None) -> None:
         if item is None:
@@ -184,7 +203,7 @@ class Store(Room):
         game.vars["money"] = money - price
         game.give(item)
         if item == "protection":
-            game.award("buy_protection", 3)
+            game.award("buy_protection")
             game.print(
                 'You lean in and ask, very quietly, for protection. "WHAT?" says the clerk. '
                 "You ask again, less quietly."
@@ -199,12 +218,17 @@ class Store(Room):
                 f"The whole store is you and him. You pay ${price} and have ${game.vars['money']} left."
             )
         elif item == "wine":
-            game.award("buy_wine", 1)
+            game.award("buy_wine")
             game.print(
                 f'"Chateau Kwik. Good year, this year." He bags it. ${price}. You have ${game.vars["money"]} left.'
             )
+        elif item == "lottery":
+            game.print(
+                f'"Scratcher. Lucky Sock." He tears one off the roll. ${price}. You have ${game.vars["money"]} left '
+                "and a small rectangle of hope."
+            )
         else:
-            game.award("buy_magazine", 1)
+            game.award("buy_magazine")
             game.print(
                 f"He slides the brown-paper magazine across without meeting your eye. ${price}. "
                 f"You have ${game.vars['money']} left, and the beginnings of a reputation."

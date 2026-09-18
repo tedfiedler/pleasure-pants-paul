@@ -237,6 +237,7 @@ class BackRoom(Room):
                     "his eyes leaving the screen. \"Don't.\" You don't."
                 )
         elif p.said("talk", "bouncer") or p.said("talk", "bouncer", "rol") or p.said("talk"):
+            game.award("talk_brick")
             if game.flags.get("brick_distracted"):
                 game.print('"Shh. Third round." He does not blink. He may never blink again.')
             else:
@@ -267,7 +268,8 @@ class BackRoom(Room):
             )
         elif p.said("get", "tv") or p.said("get", "crate"):
             game.print("It's heavier than it looks, and it looks like a television. Also, Brick.")
-        elif p.said("look", "channel") or p.said("look", "tv", "rol"):
+        elif p.said("look", "channel") or p.said("look", "tv", "rol") or p.said("look", "tv"):
+            game.award("watch_tv")
             game.print(
                 self.looks["tv"]
                 if not game.flags.get("brick_distracted")
@@ -289,7 +291,7 @@ class BackRoom(Room):
             game.print("The boxing is on. Brick is gone to a better place. Don't push your luck, or the button.")
             return
         game.flags["brick_distracted"] = True
-        game.award("distract_brick", 4)
+        game.award("distract_brick")
         game.print(
             "You aim the remote over Brick's shoulder and press CHANNEL. The fish vanishes. "
             "Two enormous men in shorts appear, hitting each other. Brick leans forward "
@@ -299,7 +301,7 @@ class BackRoom(Room):
     def _try_stairs(self, game: Game) -> None:
         game.ego.stop()
         if game.flags.get("brick_distracted"):
-            game.award("stairs", 5)
+            game.award("stairs")
             game.new_room(16)
         else:
             game.print(

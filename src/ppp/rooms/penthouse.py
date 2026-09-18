@@ -180,6 +180,7 @@ class Penthouse(Room):
             if game.flags.get("honeymoon_done"):
                 game.print("The bottle's gone. She took it. Of course she took it.")
             else:
+                game.award("champagne")
                 game.print(
                     'You pop the cork. It hits the window. "Careful," says Ginger, '
                     "\"that's the only thing in here that's paid for.\""
@@ -188,7 +189,7 @@ class Penthouse(Room):
             if game.flags.get("freed"):
                 if "note" not in game.scored:
                     game.vars["money"] = game.vars.get("money", 0) + 10
-                game.award("note", 1)
+                game.award("note")
                 game.print(
                     "The note, in lipstick on hotel stationery: \"Sugar. It was fun. The ring's real; "
                     "the rest wasn't. Don't call. G. P.S. I took the key so you'd take the stairs. "
@@ -206,6 +207,15 @@ class Penthouse(Room):
             )
         elif p.has("phone") and p.verb in ("use", "call", "get", "push"):
             game.print('You lift the gold phone. "Desk," says a voice. You have nothing to ask for. Yet.')
+        elif p.said("look", "mirror") or p.said("look", "mirror", "rol"):
+            if game.flags.get("freed"):
+                game.award("ceiling_mirror")
+                game.print(
+                    "There's a mirror on the ceiling. You look up. A tired man in a damp suit looks down. "
+                    "You nod to each other."
+                )
+            else:
+                game.print("A mirror on the ceiling. You'll have plenty of time to study it. More than you'd like.")
         elif p.said("sit", "rol") or p.said("sit"):
             game.print("You sit on the bed. It sighs. So does Ginger, differently.")
         elif p.said("smell"):
@@ -225,7 +235,7 @@ class Penthouse(Room):
             return
         game.flags["honeymoon_done"] = True
         game.flags["tied_up"] = True
-        game.award("honeymoon", 10)
+        game.award("honeymoon")
         taken = game.vars.get("money", 0)
         game.vars["money"] = 0
         game.take("key")
@@ -279,7 +289,7 @@ class Penthouse(Room):
     def _freed(self, game: Game) -> None:
         game.flags["tied_up"] = False
         game.flags["freed"] = True
-        game.award("freed", 5)
+        game.award("freed")
         game.ego.visible = True
         game.ego.frozen = False
         game.ego.x, game.ego.y = 84, 118

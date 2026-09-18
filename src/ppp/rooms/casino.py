@@ -242,18 +242,20 @@ class Casino(Room):
         win = 0
         if reels[0] == reels[1] == reels[2]:
             win = SLOT_PAYS[reels[0]]
+            game.award("jackpot")
         elif reels.count("cherry") == 2:
             win = 10
         elif "cherry" in reels:
             win = SLOT_COST
         if win:
             game.vars["money"] += win
-            game.award("slots_win", 1)
+            game.award("slots_win")
             verdict = f"Bells! Lights! ${win}!"
             if win <= SLOT_COST:
                 verdict = "A cherry. Your five dollars back. Thrilling."
         else:
             verdict = "Nothing. The machine sighs. So do you."
+        self._bankroll(game)
         game.print(
             f"You pull the lever. The reels spin and stop:\n\n  {line}\n\n{verdict} You have ${game.vars['money']}."
         )
@@ -349,7 +351,8 @@ class Casino(Room):
             else:
                 win = (bet * 3 + 1) // 2
                 game.vars["money"] += win
-                game.award("blackjack_win", 2)
+                game.award("blackjack_win")
+                game.award("natural")
                 outcome = head + f"Blackjack! Paid three to two: ${win} on top of your stake."
         else:
             while hand_value(dealer) < 17:
@@ -358,7 +361,7 @@ class Casino(Room):
             head = f"You: {show(player)}\nDealer: {show(dealer)}\n\n"
             if dv > 21 or pv > dv:
                 game.vars["money"] += bet
-                game.award("blackjack_win", 2)
+                game.award("blackjack_win")
                 outcome = head + ("Dealer busts. " if dv > 21 else "You win. ") + f"${bet} slides your way."
             elif pv == dv:
                 outcome = head + "Push. Your money stays where it was, unimpressed."
@@ -366,7 +369,16 @@ class Casino(Room):
                 game.vars["money"] -= bet
                 outcome = head + f"Dealer wins. ${bet} goes home with the house."
         self.bj.update({"bet": 0, "player": [], "dealer": [], "deck": []})
+        self._bankroll(game)
         game.print(f"{outcome} You have ${game.vars['money']}.\n\nBET again, or LEAVE.")
+
+    def _bankroll(self, game: Game) -> None:
+        if game.vars.get("money", 0) >= 500 and "high_roller" not in game.scored:
+            game.award("high_roller")
+            game.print(
+                "A cocktail waitress appears at your elbow with a drink you didn't order. \"Compliments "
+                'of the house, sir." Sir. You have five hundred dollars and, briefly, a title.'
+            )
 
     # -- the ring ------------------------------------------------------------------
 
@@ -386,7 +398,7 @@ class Casino(Room):
             return
         game.vars["money"] = money - RING_PRICE
         game.give("ring")
-        game.award("ring", 5)
+        game.award("ring")
         game.print(
             f"You count out ${RING_PRICE}. The prize lady lifts the ring from its velvet finger "
             'and drops it in your palm. "Congratulations," she says, "or condolences. It\'s '

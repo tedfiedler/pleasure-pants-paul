@@ -109,12 +109,14 @@ class Bar(Room):
             if not near_bar:
                 game.print("He can't hear you from there. Walk up to the bar.")
             else:
+                game.award("talk_bartender")
                 game.print('"You want something, or you just here to shine?"')
         elif p.said("buy", "whiskey") or p.said("order", "whiskey") or p.said("buy", "drink"):
             self._buy_whiskey(game, near_bar)
         elif p.said("drink", "whiskey"):
             if game.has("whiskey"):
                 game.take("whiskey")
+                game.award("drink_whiskey")
                 game.print(
                     "You knock it back. It goes down like a lit road flare. Your eyes water, "
                     "your future dims, and ten dollars is gone forever."
@@ -140,6 +142,7 @@ class Bar(Room):
         elif p.said("look", "drunk", "rol") or p.said("look", "pocket"):
             game.print(self.looks["drunk"])
         elif p.said("play", "jukebox") or p.said("push", "jukebox") or p.said("use", "jukebox"):
+            game.award("jukebox")
             game.print("You feed it a quarter. It plays a song about a truck. The drunk weeps.")
         elif (
             p.said("open", "door")
@@ -153,7 +156,7 @@ class Bar(Room):
         elif p.said("look", "money") or p.said("look", "wallet") or p.said("money"):
             game.print(f"You have ${game.vars.get('money', START_MONEY)}.")
         elif p.said("pay", "rol") or p.said("pay"):
-            game.print("Pay for what? Buy something first, big spender.")
+            self._tip(game, near_bar)
         elif p.said("dance"):
             game.print("You dance. The bartender stops polishing. Everyone stops. You stop.")
         elif p.said("smell"):
@@ -163,6 +166,22 @@ class Bar(Room):
         else:
             return False
         return True
+
+    def _tip(self, game: Game, near_bar: bool) -> None:
+        money = game.vars.get("money", 0)
+        if not near_bar:
+            game.print("Pay for what? Walk up to the bar first, big spender.")
+        elif "tip_bartender" in game.scored:
+            game.print("You've tipped. He remembers. He remembers everything, and it doesn't help.")
+        elif money < 1:
+            game.print("You'd tip if you had a dollar. You don't. He can tell from the door.")
+        else:
+            game.vars["money"] = money - 1
+            game.award("tip_bartender")
+            game.print(
+                'You leave a dollar on the bar. The bartender looks at it, then at you. "Big night," '
+                "he says, and for the first time the towel stops moving."
+            )
 
     def _buy_whiskey(self, game: Game, near_bar: bool) -> None:
         if not near_bar:
@@ -177,7 +196,7 @@ class Bar(Room):
             return
         game.vars["money"] = money - WHISKEY_PRICE
         game.give("whiskey")
-        game.award("buy_whiskey", 2)
+        game.award("buy_whiskey")
         game.print(
             f'He slides a shot across the bar. "Ten bucks." You pay. You now have ${game.vars["money"]} and a whiskey.'
         )
@@ -192,7 +211,7 @@ class Bar(Room):
         game.take("whiskey")
         game.flags["drunk_paid"] = True
         game.give("remote")
-        game.award("remote", 4)
+        game.award("remote")
         game.print(
             'His eyes go wide. "Pal!" He drains it in one go, fishes in his coat, and '
             "presses something into your hand. It's a TV remote control. \"Never lose "

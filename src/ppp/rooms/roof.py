@@ -168,7 +168,11 @@ class Roof(Room):
                 "makes a suggestion and your suit, being polyester, agrees. Paul goes down in style, "
                 "twenty floors of it."
             )
+        elif p.said("look", "window") or p.said("look", "window", "rol"):
+            game.award("roof_view")
+            game.print(self.looks["window"] + " You take it in. For once, nobody is looking back.")
         elif p.said("drink", "rol") or p.said("drink"):
+            game.award("roof_drink")
             game.print("You take a glass from the cart and drink. Champagne, real. Something in this city was.")
         elif p.said("smell"):
             game.print("Chlorine, champagne, and clean night air, which up here is a luxury item.")
@@ -202,7 +206,7 @@ class Roof(Room):
         else:
             game.take("apple")
             game.flags["dawn_apple"] = True
-            game.award("dawn_apple", 10)
+            game.award("dawn_apple")
             game.print(
                 "You hold out the apple. Dawn looks at it for a long moment, then at you, then takes it "
                 'and bites. "Huh," she says, with her mouth full. "Honest. Simple." She moves over. '
@@ -216,7 +220,7 @@ class Roof(Room):
             game.print('"Private party," says Dawn, not unkindly. "Bring something. Anything. Try honest."')
         else:
             game.flags["won"] = True
-            game.award("ending", 25)
+            game.award("ending")
             game.ego.visible = False
             game.ego.frozen = True
             game.print(

@@ -186,7 +186,7 @@ class DiscoStreet(Room):
         else:
             game.take("magazine")
             game.flags["disco_admitted"] = True
-            game.award("bribe_doorman", 2)
+            game.award("bribe_doorman")
             game.print(
                 "You slide the brown-paper magazine into the clipboard. The doorman does "
                 'not look down. "Never seen you before," he says warmly, unhooking the rope. '

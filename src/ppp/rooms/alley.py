@@ -133,7 +133,7 @@ class Alley(Room):
                 game.print("Get closer to the dumpster. Closer. Yes, that's the smell.")
             else:
                 game.give("rose")
-                game.award("rose", 2)
+                game.award("rose")
                 game.print(
                     "You pluck the wilted rose from the garbage and shake off a noodle. "
                     "Romance is forty percent presentation, and you have the other sixty."
@@ -146,6 +146,7 @@ class Alley(Room):
             else:
                 return False
         elif p.said("pet", "dog") or p.said("talk", "dog"):
+            game.award("pet_dog")
             game.print("The dog opens one eye, growls from somewhere deep and ancient, and closes it again.")
         elif p.said("kick", "dog") or p.said("push", "dog") or p.said("get", "dog"):
             game.die(
@@ -192,7 +193,7 @@ class Alley(Room):
             game.print('"I heard you the first time." The door is open. Use it.')
             return
         game.flags["backdoor_open"] = True
-        game.award("backdoor", 5)
+        game.award("backdoor")
         assert game.pic is not None
         game.pic.rect(98, 46, 20, 56, BLACK)
         game.pic.rect(100, 50, 16, 6, WHITE)

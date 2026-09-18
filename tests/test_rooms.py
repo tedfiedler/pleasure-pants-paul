@@ -169,13 +169,13 @@ def test_graffiti_cycles_and_teaches_the_password(game: Game) -> None:
         seen.append(drain(game)[0])
     for line in GRAFFITI:
         assert any(line in s for s in seen)
-    assert game.flags["knows_password"] and game.score == 2
+    assert game.flags["knows_password"] and game.score == 4  # the password line, and the whole wall
     game.handle_input("read the wall")
     assert GRAFFITI[0] in drain(game)[0]  # wraps around
     game.handle_input("read graffiti")
     game.handle_input("read graffiti")
     game.handle_input("read graffiti")
-    assert game.score == 2  # the password only scores once
+    assert game.score == 4  # neither scores twice
     assert PASSWORD_LINE == 2
 
 
@@ -503,7 +503,7 @@ def test_slots_pay_and_charge(game: Game) -> None:
     for _ in range(40):
         game.handle_input("pull the lever")
     assert game.vars["money"] != 100
-    assert game.score in (0, 1)
+    assert game.score in (0, 1, 6)  # nothing, a win, or a win that included a jackpot
     game.vars["money"] = 2
     game.handle_input("play slots")
     assert "sorry" in drain(game)[-1]
@@ -848,3 +848,107 @@ def test_parapet_is_fatal(game: Game) -> None:
     game.new_room(28)
     game.handle_input("climb the rail")
     assert game.dead
+
+
+def test_points_table_adds_up_to_the_maximum() -> None:
+    from ppp.game import MAX_SCORE, POINTS
+
+    assert sum(POINTS.values()) == MAX_SCORE
+    assert all(v > 0 for v in POINTS.values())
+
+
+def test_every_award_key_in_the_source_is_in_the_table() -> None:
+    import re
+    from pathlib import Path
+
+    from ppp.game import POINTS
+
+    src = Path(__file__).resolve().parent.parent / "src" / "ppp"
+    keys = set()
+    for path in src.rglob("*.py"):
+        keys.update(re.findall(r'award\("([a-z_]+)"\)', path.read_text()))
+    assert keys <= set(POINTS), keys - set(POINTS)
+    rides = {f"ride_{d}" for d in ("bar", "store", "disco", "casino", "chapel")}
+    assert set(POINTS) - keys == rides  # the ride keys are built with an f-string
+
+
+def test_quiz_perfect_scores(monkeypatch) -> None:
+    import random
+
+    from ppp.quiz import Quiz
+
+    q = Quiz()
+    q.start(random.Random(2))
+    for _ in range(5):
+        _, choices, correct = q.current
+        q.answer("abcd"[correct])
+        q.next()
+    assert q.done and q.passed and q.wrong == 0 and not q.skipped
+    q2 = Quiz()
+    q2.start(random.Random(2))
+    q2.skip()
+    assert q2.skipped
+
+
+def test_side_points_in_the_bar_and_mens_room(game: Game) -> None:
+    game.new_room(11)
+    drain(game)
+    game.ego.x, game.ego.y = 60, 108
+    game.handle_input("talk to bartender")
+    game.handle_input("tip bartender")
+    assert game.vars["money"] == 93 and game.score == 3
+    game.handle_input("tip bartender")
+    assert game.vars["money"] == 93
+    game.handle_input("play jukebox")
+    game.handle_input("buy whiskey")
+    game.handle_input("drink whiskey")
+    assert game.score == 7 and not game.has("whiskey")
+    game.new_room(14)
+    game.handle_input("use toilet")
+    game.handle_input("flush")
+    game.handle_input("wash hands")
+    game.handle_input("kiss mirror")
+    assert game.score == 11
+
+
+def test_lottery_and_high_roller(game: Game) -> None:
+    game.new_room(18)
+    game.ego.x, game.ego.y = 80, 110
+    game.vars["money"] = 5
+    game.handle_input("buy scratcher")
+    assert game.has("lottery") and game.vars["money"] == 4
+    game.handle_input("scratch it")
+    assert game.vars["money"] == 29 and game.score == 5 and not game.has("lottery")
+    game.handle_input("buy lottery ticket")
+    game.handle_input("scratch")
+    assert game.vars["money"] == 28 and game.score == 5
+    game.new_room(22)
+    from ppp.rooms.casino import Casino
+
+    room = game.room
+    assert isinstance(room, Casino)
+    game.ego.x, game.ego.y = 88, 110
+    game.vars["money"] = 480
+    game.handle_input("play blackjack")
+    game.handle_input("bet 20")
+    room.bj.update({"bet": 20, "player": ["Kd", "Qs"], "dealer": ["7h", "Kc"], "deck": ["2c", "2d"]})
+    drain(game)
+    game.handle_input("stand")
+    assert game.vars["money"] == 500 and "high_roller" in game.scored
+    assert "Compliments" in drain(game)[0]
+
+
+def test_tip_driver_and_seen_town(game: Game) -> None:
+    game.vars["money"] = 100
+    for dest in ("store", "disco", "casino", "chapel"):
+        game.new_room(13)
+        game.handle_input(dest)
+        game.handle_input("pay")
+    assert "seen_town" not in game.scored
+    game.new_room(13)
+    game.handle_input("rooster's")
+    game.handle_input("pay")
+    assert "seen_town" in game.scored
+    drain(game)
+    game.handle_input("tip driver")
+    assert "tip_driver" in game.scored and game.vars["money"] == 100 - 25 - 1

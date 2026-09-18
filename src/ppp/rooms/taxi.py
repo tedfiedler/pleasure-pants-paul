@@ -123,6 +123,7 @@ class Taxi(Room):
         if dest is not None:
             self._ride(game, dest)
         elif p.said("talk", "driver") or p.said("talk", "driver", "rol") or p.said("talk"):
+            game.award("talk_driver")
             if fare:
                 game.print(f'"That\'s ${fare}, pal. Then we can be friends."')
             else:
@@ -166,7 +167,9 @@ class Taxi(Room):
         elif room is not None:
             game.vars["fare"] = price
             game.vars["cab_dest"] = room
-            game.award(f"ride_{dest}", 1)
+            game.award(f"ride_{dest}")
+            if all(f"ride_{d}" in game.scored for d in DESTINATIONS):
+                game.award("seen_town")
             game.print(
                 f"He floors it toward {name}. The city smears past: neon, brick, a man "
                 f"arguing with a lamp post. He stops at the curb outside {name}. "
@@ -174,7 +177,7 @@ class Taxi(Room):
             )
         else:
             game.vars["fare"] = price
-            game.award(f"ride_{dest}", 1)
+            game.award(f"ride_{dest}")
             game.print(
                 f"He floors it toward {name}. The city smears past. Then he brakes hard: "
                 f"{name} is behind a plywood fence and a sign that says COMING SOON. "
@@ -182,12 +185,16 @@ class Taxi(Room):
             )
 
     def _pay(self, game: Game, fare: int, money: int) -> None:
-        if not fare:
+        if not fare and money >= 1 and "tip_driver" not in game.scored and game.flags.get("cab_ride_done"):
+            game.vars["money"] = money - 1
+            game.award("tip_driver")
+            game.print('You hand over a dollar on top. He looks at it. "Big spender." He means it, a little.')
+        elif not fare:
             game.print('"Pay for what? Tell me where you\'re going first."')
         elif money >= fare:
             game.vars["money"] = money - fare
             game.vars["fare"] = 0
-            game.award("pay_cab", 1)
+            game.award("pay_cab")
             game.print(
                 f'You hand over ${fare}. "Pleasure," he says, meaning the money. You have ${game.vars["money"]} left.'
             )

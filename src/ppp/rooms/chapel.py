@@ -184,8 +184,16 @@ class Chapel(Room):
                 "is a small pile of ash in a leisure suit, which is at least easy to sweep."
             )
         elif p.said("play", "organ") or p.said("use", "organ"):
+            game.award("organ")
             game.print("You press a key. The organ plays a chord that sounds like a question nobody wants answered.")
+        elif p.said("dance", "rol") or p.said("dance"):
+            if bride:
+                game.award("dance_aisle")
+                game.print("You dance Ginger down the aisle. The preacher taps his watch, which is a wedding ring.")
+            else:
+                game.print("You dance alone in the aisle. The organ does not join in. Neither does anyone.")
         elif p.said("sit", "rol") or p.said("sit"):
+            game.award("pew")
             game.print("You sit in a pew. It's the loneliest seat in the city, and you know from lonely seats.")
         elif p.said("kiss", "hooker"):
             game.print(
@@ -200,7 +208,13 @@ class Chapel(Room):
         return True
 
     def _talk_preacher(self, game: Game, bride: bool) -> None:
-        if game.flags.get("ginger_married"):
+        if game.flags.get("honeymoon_done"):
+            game.award("confess")
+            game.print(
+                'You tell him about the rope, the wallet, the maid. He nods through all of it. "Son," '
+                'he says, "that\'s every marriage. Yours was just faster." He does not offer a refund.'
+            )
+        elif game.flags.get("ginger_married"):
             game.print('"Congratulations, son. Come back any time. Statistically, you will."')
         elif not bride:
             game.print(
@@ -253,7 +267,7 @@ class Chapel(Room):
             game.take("ring")
             game.flags["ginger_married"] = True
             game.give("key")
-            game.award("wedding", 15)
+            game.award("wedding")
             game.print(
                 'The preacher opens the book. "Dearly beloved, and Paul." Ginger takes your hand. '
                 "The organ finds a chord. The candelabra, somehow, lights itself."
@@ -272,7 +286,7 @@ class Chapel(Room):
         if not self.near(game, 8, 34, 116):
             game.print("The rope is on the left wall. Walk over; it doesn't stretch.")
         elif game.flags.get("ginger_married"):
-            game.award("bell", 1)
+            game.award("bell")
             game.print(
                 "You pull the rope. The bell rings out over the street, once, "
                 "twice. Somewhere a neighbour swears. You are married."

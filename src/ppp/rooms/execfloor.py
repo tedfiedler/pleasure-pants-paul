@@ -148,6 +148,15 @@ class ExecFloor(Room):
             self._pool_door(game)
         elif p.has("elevator") and p.verb in ("open", "enter", "use", "push", "call"):
             game.print("The doors don't open for you. You know why. Everybody on this floor knows why.")
+        elif p.said("look", "photo") or p.said("look", "photo", "rol") or p.said("get", "photo"):
+            if not at_desk:
+                game.print("It's on the desk, turned away. Walk up if you must.")
+            else:
+                game.award("hope_photo")
+                game.print(
+                    "You lean over. The photo is Hope and a man the size of a vending machine, both "
+                    'laughing, on a beach. Hope turns it back around without looking up. "Yes," she says.'
+                )
         elif p.said("get", "plant") or p.said("kick", "plant"):
             game.print("It's plastic and it's bolted. Somebody anticipated you.")
         elif p.said("smell"):
@@ -202,7 +211,7 @@ class ExecFloor(Room):
             game.give("pass")
             game.flags["hope_coffee"] = True
             game.flags["pool_pass"] = True
-            game.award("hope_coffee", 5)
+            game.award("hope_coffee")
             game.print(
                 'Hope takes the cup in both hands. "Nobody brings me coffee." She opens a drawer, '
                 "takes out a laminated pass on a lanyard, and puts it on the desk between you. "
@@ -221,7 +230,7 @@ class ExecFloor(Room):
             game.print('"Those are for the look of the thing," says Hope, not looking up. You put it back. Slowly.')
         else:
             game.give("apple")
-            game.award("apple", 2)
+            game.award("apple")
             game.print("You take an apple from the bowl. Red, polished, and for once, for you.")
 
     def _pool_door(self, game: Game) -> None:

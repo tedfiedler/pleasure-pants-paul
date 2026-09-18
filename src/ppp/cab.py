@@ -79,7 +79,7 @@ class Curb:
         else:
             self.state = "arriving"
             self.x = PIC_W
-            game.award("call_cab", 1)
+            game.award("call_cab")
             game.print("You wave your arms like a man drowning in polyester. A cab peels around the corner.")
 
     def board(self, game: Game) -> None:

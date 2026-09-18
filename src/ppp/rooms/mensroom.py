@@ -51,7 +51,7 @@ class MensRoom(Room):
         "when you aren't looking at it.",
         "mirror": "The mirror is mostly scratches. What's left shows a man in a white suit "
         "who should know better. You wave. He waves back, reluctantly.",
-        "toilet": "The stall has no door. The toilet has no seat. The situation has no upside.",
+        "bathroom": "The stall has no door. The toilet has no seat. The situation has no upside.",
         "stool": "The stall has no door. The toilet has no seat. The situation has no upside.",
         "floor": "Sticky tiles. You are choosing not to think about why.",
         "door": "The way out. It's behind you, at the bottom of the screen.",
@@ -126,16 +126,19 @@ class MensRoom(Room):
         reads_wall = p.said("look", "graffiti") or p.said("look", "wall", "rol") or p.said("look", "graffiti", "rol")
         if reads_wall or p.said("look", "writing") or p.said("look", "wall") and self.line:
             self._read(game)
-        elif p.said("use", "toilet") or p.said("use", "urinal") or p.said("sit", "toilet") or p.said("sit"):
+        elif p.has("bathroom", "urinal") and p.verb in ("use", "sit") or p.said("sit"):
+            game.award("toilet")
             game.print(
                 "You take care of business. There's no paper, no seat, and no dignity, "
                 "but there is, for one shining moment, relief."
             )
-        elif p.said("push", "toilet") or p.said("use", "flush") or p.said("flush"):
+        elif p.said("push", "bathroom") or p.said("use", "flush") or p.said("flush") or p.said("flush", "rol"):
+            game.award("flush")
             game.print("It flushes with a sound like a whale clearing its throat. Nothing else happens. Yet.")
-        elif p.said("look", "toilet", "rol") or p.said("search", "toilet"):
+        elif p.said("look", "bathroom", "rol") or p.said("search", "bathroom"):
             game.print("You look into the bowl. The bowl looks into you. Nobody wins.")
-        elif p.said("wash", "rol") or p.said("use", "sink") or p.said("wash"):
+        elif p.verb == "wash" or p.said("use", "sink"):
+            game.award("wash")
             game.print("You wash your hands with the grey sliver. You feel marginally less like a bar. Marginally.")
         elif p.said("get", "soap"):
             game.print("You leave the soap. Some things belong to the room.")
@@ -148,6 +151,7 @@ class MensRoom(Room):
                 "of curiosity, and of many, many other things."
             )
         elif p.said("kiss", "mirror"):
+            game.award("kiss_mirror")
             game.print("You kiss the mirror. It's the most action either of you has had in months.")
         elif p.said("look", "self"):
             game.print(self.looks["mirror"])
@@ -163,6 +167,8 @@ class MensRoom(Room):
         text = GRAFFITI[self.line]
         if self.line == PASSWORD_LINE:
             game.flags["knows_password"] = True
-            game.award("password", 2)
+            game.award("password")
         self.line = (self.line + 1) % len(GRAFFITI)
+        if self.line == 0:
+            game.award("graffiti_all")
         game.print(f'Scrawled on the wall in marker:\n\n"{text}"\n\n(There\'s more. Keep reading.)')

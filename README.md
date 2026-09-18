@@ -281,8 +281,30 @@ before you do anything clever, and especially before you do anything stupid.
 | 10 | On the roof, with the pass: `give apple to dawn`. |
 | 25 | `Get in the tub`. The end. |
 
-That is 152 points of a possible 222, all reachable, and the game can be
-finished. The remaining seventy are for the rooms and jokes still to come.
+That is 152 points on the main line. The other seventy are for poking at
+things, the way the originals rewarded curiosity:
+
+| Points | How |
+|---|---|
+| 5 | Answer all five age-quiz questions correctly, without the skip. |
+| 1, 2, 1, 1 | Rooster's: `talk to bartender`, `tip bartender`, `play jukebox`, `drink whiskey` yourself. |
+| 1, 1, 1, 1, 2 | Men's room: `use toilet`, `flush`, `wash hands`, `kiss mirror`, and read the whole wall. |
+| 1 | Alley: `pet dog`. Carefully. |
+| 1, 1 | Back room: `talk to brick`, `look at tv`. |
+| 1 | Upstairs: `eat chocolate`, once you have them. |
+| 1, 2, 3 | Cab: `talk to driver`, `tip driver` after a ride, and ride to all five places. |
+| 1, 1 | Outside the Kwik-Snak: `use phone`, `read newspaper`. |
+| 1, 5 | Kwik-Snak: `read magazine`; `buy scratcher` then `scratch it` (it pays twenty-five, once). |
+| 1, 1, 2 | Boogie Palace: `request song`, dance alone, `pay dj` five dollars. |
+| 1 | Outside the Golden Sock: `talk to doorman`. |
+| 5, 3, 10 | Golden Sock: three of a kind on the slots, a natural at blackjack, and a bankroll of $500. |
+| 1, 1, 2, 2 | Chapel: `play organ`, `sit` in a pew, `dance` with the bride, and confess to the preacher afterwards. |
+| 1, 1 | Penthouse: `drink champagne` before, `look at mirror` after. |
+| 1 | Lounge: `heckle`. |
+| 1 | Executive floor: `look at photo`. |
+| 1, 1 | Roof: `look at the city`, `drink`. |
+
+That is 222 of 222.
 </details>
 
 The screenshots are regenerated with `uv run python tools/screenshots.py`.

@@ -262,7 +262,12 @@ class Disco(Room):
                 game.print("You sit. Ginger allows it, the way a cat allows weather.")
             else:
                 game.print("There's one table, and someone's at it. Everyone else stands; it's that kind of place.")
+        elif (
+            p.said("give", "money", "dj") or p.said("pay", "dj") or p.said("pay", "dj", "rol")
+        ) and not self.dance_timer:
+            self._tip_dj(game)
         elif p.said("talk", "dj") or p.said("use", "dj") or p.has("song"):
+            game.award("request_song")
             game.print(
                 "You request a song. The DJ nods, and plays the one he was going to play anyway. It has a saxophone."
             )
@@ -286,6 +291,20 @@ class Disco(Room):
         else:
             return False
         return True
+
+    def _tip_dj(self, game: Game) -> None:
+        money = game.vars.get("money", 0)
+        if "tip_dj" in game.scored:
+            game.print("He's had your five. He's playing it now, in a sense. It has a saxophone.")
+        elif money < 5:
+            game.print("He wants five. You have less. He turns the record over without looking at you.")
+        else:
+            game.vars["money"] = money - 5
+            game.award("tip_dj")
+            game.print(
+                "You slide five dollars onto the booth. The DJ nods, once, and the next song has a "
+                "saxophone in it. This time it's for you. Ginger, at her table, looks up."
+            )
 
     def _talk(self, game: Game) -> None:
         if game.flags.get("ginger_married"):
@@ -321,13 +340,13 @@ class Disco(Room):
             game.take(item)
             game.flags[f"ginger_{item}"] = True
             if item == "candy":
-                game.award("ginger_candy", 3)
+                game.award("ginger_candy")
                 game.print(
                     "Ginger opens the heart-shaped box, counts the missing ones, and eats "
                     'a third. "Well," she says, "you\'re trying. I like trying."'
                 )
             else:
-                game.award("ginger_wine", 2)
+                game.award("ginger_wine")
                 game.print(
                     'She turns the bottle to read the label. "Chateau Kwik." She laughs, '
                     'properly, for the first time. "You\'re a disaster. Dance with me."'
@@ -335,6 +354,7 @@ class Disco(Room):
 
     def _dance(self, game: Game, with_her: bool) -> None:
         if not with_her:
+            game.award("dance_alone")
             game.print("You dance alone. The floor pulses. The mirror ball turns. Nobody joins you; nobody would.")
             return
         if game.flags.get("ginger_danced"):
@@ -359,7 +379,7 @@ class Disco(Room):
         game.ego.frozen = False
         game.ego.stop()
         game.flags["ginger_danced"] = True
-        game.award("ginger_dance", 5)
+        game.award("ginger_dance")
         game.print(
             "The song ends. Ginger is flushed and, for a moment, looking at you like you "
             'are a person. "Here\'s the thing, Paul." She holds up her left hand. "No ring. '

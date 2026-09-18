@@ -133,6 +133,8 @@ class App:
             self.quiz.answer(ev.unicode)
         if self.quiz.done:
             if self.quiz.passed:
+                if self.quiz.wrong == 0 and not self.quiz.skipped:
+                    self.game.award("quiz_perfect")
                 self.start_game()
             else:
                 self.state = State.REJECTED

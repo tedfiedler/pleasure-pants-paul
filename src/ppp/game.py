@@ -13,6 +13,87 @@ from ppp.pic import Picture
 from ppp.room import Room
 
 MAX_SCORE = 222
+
+# Every point in the game. award(key) looks its value up here, once per key.
+POINTS: dict[str, int] = {
+    # the main line
+    "buy_whiskey": 2,
+    "remote": 4,
+    "password": 2,
+    "rose": 2,
+    "backdoor": 5,
+    "distract_brick": 4,
+    "stairs": 5,
+    "give_rose": 2,
+    "candy": 3,
+    "dolores": 15,
+    "call_cab": 1,
+    "ride_bar": 1,
+    "ride_store": 1,
+    "ride_disco": 1,
+    "ride_casino": 1,
+    "ride_chapel": 1,
+    "pay_cab": 1,
+    "buy_protection": 3,
+    "buy_wine": 1,
+    "buy_magazine": 1,
+    "bribe_doorman": 2,
+    "ginger_candy": 3,
+    "ginger_wine": 2,
+    "ginger_dance": 5,
+    "slots_win": 1,
+    "blackjack_win": 2,
+    "ring": 5,
+    "wedding": 15,
+    "bell": 1,
+    "honeymoon": 10,
+    "freed": 5,
+    "note": 1,
+    "lounge": 3,
+    "hope_coffee": 5,
+    "apple": 2,
+    "dawn_apple": 10,
+    "ending": 25,
+    # side content: the small rewards for poking at things
+    "quiz_perfect": 5,
+    "talk_bartender": 1,
+    "tip_bartender": 2,
+    "jukebox": 1,
+    "drink_whiskey": 1,
+    "toilet": 1,
+    "wash": 1,
+    "flush": 1,
+    "graffiti_all": 2,
+    "kiss_mirror": 1,
+    "pet_dog": 1,
+    "watch_tv": 1,
+    "talk_brick": 1,
+    "eat_candy": 1,
+    "talk_driver": 1,
+    "tip_driver": 2,
+    "seen_town": 3,
+    "phone_time": 1,
+    "newspaper": 1,
+    "read_magazine": 1,
+    "lottery": 5,
+    "request_song": 1,
+    "dance_alone": 1,
+    "tip_dj": 2,
+    "talk_doorman": 1,
+    "jackpot": 5,
+    "natural": 3,
+    "high_roller": 10,
+    "organ": 1,
+    "pew": 1,
+    "dance_aisle": 2,
+    "confess": 2,
+    "champagne": 1,
+    "ceiling_mirror": 1,
+    "heckle": 1,
+    "hope_photo": 1,
+    "roof_view": 1,
+    "roof_drink": 1,
+}
 START_MONEY = 94
 
 # AGI speed settings, in game cycles per second
@@ -84,11 +165,11 @@ class Game:
 
     # -- scoring & inventory --------------------------------------------
 
-    def award(self, key: str, points: int) -> None:
-        """Award points once per key, so repeating an action never re-scores."""
+    def award(self, key: str) -> None:
+        """Award the points for `key` once, so repeating an action never re-scores."""
         if key not in self.scored:
             self.scored.add(key)
-            self.score += points
+            self.score += POINTS[key]
 
     def has(self, item: str) -> bool:
         return item in self.inventory

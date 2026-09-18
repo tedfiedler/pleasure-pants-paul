@@ -131,6 +131,7 @@ class StoreStreet(Room):
             if not near_phone:
                 game.print("Walk over to the phone. It's on the left, by the corner, and it's not cordless.")
             else:
+                game.award("phone_time")
                 game.print(
                     "You lift the receiver. It's sticky. You realise you have nobody to call, "
                     "so you call the time. It is later than you thought. It always is."
@@ -147,6 +148,7 @@ class StoreStreet(Room):
             else:
                 game.print("Walk up to the glass doors. They slide open for anyone; it's a low bar, and you clear it.")
         elif p.said("get", "newspaper") or p.said("look", "newspaper", "rol") or p.said("open", "newspaper"):
+            game.award("newspaper")
             game.print("The box wants a quarter. You want the quarter more. You read the headline through the glass.")
         elif p.said("smell"):
             game.print("Bleach, fryer grease, and the cold electric smell of a cooler working too hard.")

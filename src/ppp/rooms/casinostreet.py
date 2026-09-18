@@ -109,6 +109,7 @@ class CasinoStreet(Room):
         if self.curb.said(game, p):
             pass
         elif p.said("talk", "bouncer") or p.said("talk", "bouncer", "rol") or p.said("talk"):
+            game.award("talk_doorman")
             game.print('"Good luck in there, sir." He means it. He\'s seen the odds.')
         elif p.said("open", "door") or p.said("enter", "door") or p.said("enter", "casino") or p.said("enter"):
             if self.curb.near(game):

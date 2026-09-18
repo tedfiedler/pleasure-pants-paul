@@ -44,6 +44,7 @@ class Quiz:
     wrong: int = 0
     done: bool = False
     passed: bool = False
+    skipped: bool = False
     feedback: str | None = None
 
     def start(self, rng: random.Random | None = None) -> None:
@@ -53,6 +54,7 @@ class Quiz:
         self.wrong = 0
         self.done = False
         self.passed = False
+        self.skipped = False
         self.feedback = None
 
     @property
@@ -89,6 +91,7 @@ class Quiz:
     def skip(self) -> None:
         self.done = True
         self.passed = True
+        self.skipped = True
 
     def lines(self) -> list[str]:
         """Render the current state as 40-column text lines."""

@@ -103,6 +103,7 @@ class Lounge(Room):
         elif p.said("look", "lounge", "rol"):
             game.print(self.looks["lounge"])
         elif p.has("heckle") or p.said("talk", "lounge") or p.said("talk", "lounge", "rol") or p.said("talk"):
+            game.award("heckle")
             game.print(
                 '"Oh, we got a talker." The comedian shades his eyes. "Sir, I don\'t come to where you '
                 "work and knock the mop out of your hands.\" The bartender laughs. It's the first time tonight."
@@ -131,7 +132,7 @@ class Lounge(Room):
         text = JOKES[self.joke]
         self.joke += 1
         if self.joke == len(JOKES):
-            game.award("lounge", 3)
+            game.award("lounge")
             game.print(f"{text}\n\nHe bows to nobody. The spotlight goes out. You've seen the whole act. That was it.")
         else:
             game.print(f"You sit. The comedian leans into the mic.\n\n{text}\n\n(SIT again for more. There is more.)")
