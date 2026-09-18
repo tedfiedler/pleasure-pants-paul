@@ -676,11 +676,73 @@ def test_wedding_needs_fee_and_ring_then_gives_the_key(game: Game) -> None:
     assert game.room is not None and not game.room.objects(game)
     game.new_room(22)
     drain(game)
+    game.ego.x, game.ego.y = 46, 110
     game.handle_input("use key")
-    assert "PENTHOUSE" in drain(game)[0]
+    assert game.room is not None and game.room.number == 25
 
 
 def test_collection_box_is_fatal(game: Game) -> None:
     game.new_room(24)
     game.handle_input("take the collection box")
+    assert game.dead
+
+
+def test_elevator_needs_the_key(game: Game) -> None:
+    game.new_room(22)
+    game.ego.x, game.ego.y = 46, 110
+    drain(game)
+    game.handle_input("use elevator")
+    assert game.room is not None and game.room.number == 22 and "keyhole" in drain(game)[0]
+    game.give("key")
+    game.handle_input("enter elevator")
+    assert game.room.number == 25
+
+
+def test_honeymoon_robbery_and_escape(game: Game) -> None:
+    from ppp.rooms.penthouse import MAID_CYCLES, Penthouse
+
+    game.flags["ginger_married"] = True
+    game.give("key")
+    game.vars["money"] = 120
+    game.new_room(25)
+    room = game.room
+    assert isinstance(room, Penthouse) and len(room.objects(game)) == 1
+    drain(game)
+    game.ego.x, game.ego.y = 100, 116
+    game.handle_input("kiss ginger")
+    msgs = drain(game)
+    assert len(msgs) == 3 and "$120" in msgs[2]
+    assert game.flags["tied_up"] and game.vars["money"] == 0 and not game.has("key")
+    assert game.score == 10 and not game.ego.visible and game.ego.frozen
+    game.handle_input("untie rope")
+    assert "Scout" in drain(game)[0]
+    game.handle_input("get up")
+    assert "tied to a bed" in drain(game)[0]
+    game.handle_input("read note")
+    assert "hands are free" in drain(game)[0]
+    game.handle_input("kick the phone")
+    assert room.maid_timer == MAID_CYCLES and "Desk" in drain(game)[0]
+    game.handle_input("scream")
+    assert "on its way" in drain(game)[0]
+    run(game, MAID_CYCLES)
+    assert game.flags["freed"] and not game.flags["tied_up"] and game.score == 15
+    assert game.ego.visible and not game.ego.frozen
+    assert "maid" in (game.message or "")
+    drain(game)
+    game.handle_input("read the note")
+    assert game.score == 16 and "stairs" in drain(game)[0]
+    assert not room.objects(game)
+    # back down, and the elevator is closed to him now
+    game.ego.x, game.ego.y = 76, 166
+    game.ego.set_direction(5)
+    run(game, 4)
+    assert game.room is not None and game.room.number == 22
+    game.ego.x, game.ego.y = 46, 110
+    game.handle_input("use elevator")
+    assert "pity" in drain(game)[0]
+
+
+def test_balcony_is_fatal(game: Game) -> None:
+    game.new_room(25)
+    game.handle_input("open the balcony door")
     assert game.dead

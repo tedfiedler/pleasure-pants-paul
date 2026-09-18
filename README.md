@@ -26,7 +26,7 @@ the west (12), the inside of a cab (13), the men's room (14), the back room
 behind the alley door (15), the room upstairs (16), the Kwik-Snak with its
 own street (17, 18), the Boogie Palace (19, 20), the Golden Sock Casino
 (21, 22) and the Chapel of Eternal Regret (23, 24), each with its own
-street. See the player's guide below.
+street, and the casino penthouse (25). See the player's guide below.
 
 Alt-X (or Cmd-X on a Mac) skips the age quiz.
 
@@ -184,6 +184,18 @@ collection box is for the needy, and they are well defended.
 
 ![The wedding](docs/images/chapel-wedding.png)
 
+### The penthouse
+
+![The penthouse](docs/images/penthouse.png)
+
+The honeymoon suite, at the top of the casino elevator, with the key from
+the chapel. Ginger is waiting with two glasses. What happens next is the
+oldest turn in the genre, so save first, and keep your money somewhere
+other than your wallet if you can think of anywhere. Afterwards your
+options are limited and mostly involve your feet.
+
+![After](docs/images/penthouse-tied.png)
+
 ### The Boogie Palace
 
 ![Outside the Boogie Palace](docs/images/disco-street.png)
@@ -236,9 +248,12 @@ before you do anything clever, and especially before you do anything stupid.
 | 5 | At the prize counter, with $250: `buy ring`. |
 | 15 | At the chapel, with Ginger waiting: `pay preacher`, then `marry ginger`. |
 | 1 | Afterwards, by the rope on the left: `pull rope`. |
+| 10 | In the penthouse: `kiss ginger`. This costs everything you're carrying. |
+| 5 | Tied to the bed: `kick phone`, then wait for housekeeping. |
+| 1 | Once free: `read note`. |
 
-That is 91 points of a possible 222, all reachable. Ginger is waiting in
-the Golden Sock penthouse, which is being made up.
+That is 107 points of a possible 222, all reachable. After the penthouse
+Paul is free, married, and broke, which is where the second half begins.
 </details>
 
 The screenshots are regenerated with `uv run python tools/screenshots.py`.

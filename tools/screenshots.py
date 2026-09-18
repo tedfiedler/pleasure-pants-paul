@@ -138,6 +138,19 @@ def main() -> int:
     key(pygame.K_SPACE)
     shot("chapel-wedding")
     key(pygame.K_SPACE)
+    game.new_room(22)
+    game.messages.clear()
+    game.ego.x, game.ego.y = 46, 110
+    cmd("use elevator")
+    game.messages.clear()
+    game.ego.x, game.ego.y = 60, 130
+    shot("penthouse")
+    game.ego.x, game.ego.y = 100, 116
+    cmd("kiss ginger", dismiss=False)
+    key(pygame.K_SPACE)
+    key(pygame.K_SPACE)
+    shot("penthouse-tied")
+    key(pygame.K_SPACE)
     game.new_room(10)
     game.messages.clear()
     game.ego.x, game.ego.y = 76, 128

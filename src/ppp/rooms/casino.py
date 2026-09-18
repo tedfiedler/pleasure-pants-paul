@@ -70,7 +70,7 @@ class Casino(Room):
     )
     horizon = 100
     edges = {"bottom": 21}
-    spawns = {"default": (80, 150), 21: (80, 156)}
+    spawns = {"default": (80, 150), 21: (80, 156), 25: (46, 108)}
     looks = {
         "slot": "Three slot machines, chrome and neon, each with a lever like a "
         "question. A pull costs five dollars. Try PULL LEVER.",
@@ -193,10 +193,14 @@ class Casino(Room):
                 "and it's still sold out."
             )
         elif p.has("elevator") and p.verb in ("open", "enter", "use", "push", "call") or p.said("use", "key", "rol"):
-            if game.has("key"):
+            if not self.near(game, 30, 62):
+                game.print("The elevator is at the back, left of centre. Walk up to it.")
+            elif game.has("key"):
+                game.new_room(25)
+            elif game.flags.get("honeymoon_done"):
                 game.print(
-                    "The key fits. The doors open on a brass box, then close, then open again on "
-                    "the same lobby. A sign inside: PENTHOUSE BEING MADE UP. Ginger will have to wait."
+                    "The keyhole. She took the key. The desk clerk says the "
+                    "penthouse is 'occupied' and looks at you with pity."
                 )
             else:
                 game.print("No button, only a keyhole. Whoever lives up there doesn't want visitors. Yet.")
