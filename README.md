@@ -18,7 +18,13 @@ uv run ppp --scale 4    # bigger window (integer scale, default 3)
 
 Walk with the arrow keys (press the same arrow again to stop, like the
 original). Type commands such as `look`, `look bar`, `talk to bartender`,
-`buy whiskey`, `give whiskey to drunk`, `inventory`, `score`, `quit`.
+`buy whiskey`, `give whiskey to drunk`, `call a cab`, `search dumpster`,
+`inventory`, `score`, `quit`.
+
+Rooms so far: the street outside Rooster's (10), the bar (11), the alley to
+the west (12) and the inside of a cab (13). Paul can die: in traffic, in the
+alley if he lingers, and by kicking the dog. Death offers restore, restart
+or quit, as tradition demands.
 
 Alt-X (or Cmd-X on a Mac) skips the age quiz.
 
@@ -61,6 +67,9 @@ The engine reproduces the AGI model rather than emulating it:
 - **Speed**: slow, normal, fast, fastest = 10, 20, 40, 80 cycles a second.
 - **Font**: public-domain 8x8 IBM PC bitmap font.
 - **Score** shown as `Score: N of 222`, awarded once per action.
+- **Animated objects**: rooms can return sprites with a baseline, and they
+  are drawn in baseline order with Paul, so the cab passes in front of or
+  behind him correctly.
 
 ## Layout
 
@@ -70,6 +79,7 @@ src/ppp/
   game.py      state, scoring, inventory, command dispatch, global verbs
   room.py      Room base class (draw, enter, update, said, looks)
   rooms/       one file per room; register() lists them
+  sprite.py    ASCII-art to surface, shared by Paul and room objects
   pic.py       Picture: visual + priority screens and drawing commands
   ego.py       Paul's sprite frames, movement, priority-aware blit
   parser.py    tokeniser and said() matcher
@@ -87,8 +97,10 @@ src/ppp/
 
 Subclass `Room`, set `number`, `name`, `description`, `horizon`, `edges`,
 `spawns` and a `looks` table, implement `draw(pic)`, and add it to
-`rooms/__init__.py`. Override `said()` for puzzles and `update()` for
-per-cycle triggers. See `rooms/bar.py` for a complete example.
+`rooms/__init__.py`. Override `said()` for puzzles, `update()` for
+per-cycle triggers, and `objects()` for animated sprites. See `rooms/bar.py`
+for a puzzle room and `rooms/street.py` for an animated one. Call
+`game.die(text)` for a Sierra death.
 
 ## Building executables
 

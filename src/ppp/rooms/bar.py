@@ -16,13 +16,12 @@ from ppp.const import (
     WHITE,
     YELLOW,
 )
-from ppp.game import Game
+from ppp.game import START_MONEY, Game
 from ppp.parser import Parsed
 from ppp.pic import Picture
 from ppp.room import Room
 
 WHISKEY_PRICE = 10
-START_MONEY = 94
 
 
 class Bar(Room):
@@ -87,7 +86,6 @@ class Bar(Room):
 
     def enter(self, game: Game, from_room: int | None) -> None:
         super().enter(game, from_room)
-        game.vars.setdefault("money", START_MONEY)
         if not game.flags.get("seen_bar"):
             game.flags["seen_bar"] = True
             game.print(

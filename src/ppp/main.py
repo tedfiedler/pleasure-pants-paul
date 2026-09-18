@@ -11,7 +11,7 @@ import pygame
 from ppp import __version__, save
 from ppp.const import BLACK, PALETTE, PIC_H, PIC_TOP, PIC_W, SCREEN_H, SCREEN_W, WHITE, YELLOW
 from ppp.dialog import ConfirmDialog, Dialog, ListDialog, TextDialog
-from ppp.game import Game
+from ppp.game import MAX_SCORE, Game
 from ppp.menu import SHORTCUTS, MenuBar
 from ppp.quiz import Quiz
 from ppp.rooms import START_ROOM, register
@@ -78,6 +78,7 @@ class App:
         self.running = True
         self.menu = MenuBar()
         self.dialog: Dialog | None = None
+        self.pending_death = False  # re-show the death dialog after its message clears
         if skip_quiz:
             self.start_game()
 
@@ -146,6 +147,12 @@ class App:
         if game.message is not None:
             if ev.type == pygame.KEYDOWN:
                 game.dismiss()
+                if game.dead and game.message is None:
+                    self.pending_death = False
+                    self.death_dialog()
+            return
+        if game.dead:
+            self.death_dialog()
             return
         if ev.type == pygame.TEXTINPUT:
             if len(self.input) < 38:
@@ -185,6 +192,8 @@ class App:
             saves = save.list_saves()
             if not saves:
                 game.print("There are no saved games. Yet. Try F5.")
+                if game.dead:
+                    self.pending_death = True
             else:
                 self.dialog = ListDialog(
                     "Select a game to restore:",
@@ -194,7 +203,10 @@ class App:
         elif action == "restart":
             self.dialog = ConfirmDialog("Restart the game from the beginning?", "restart", self.restart)
         elif action == "quit":
-            self.dialog = ConfirmDialog("Leave Paul to his fate?", "quit", self.stop)
+            if game.dead:
+                self.stop()
+            else:
+                self.dialog = ConfirmDialog("Leave Paul to his fate?", "quit", self.stop)
         elif action in ("look", "inventory", "score", "help"):
             game.handle_input(action)
         elif action == "sound":
@@ -202,6 +214,16 @@ class App:
         elif action.startswith("speed_"):
             game.set_speed(action.removeprefix("speed_"))
             game.print(f"Speed set to {game.speed}.")
+
+    def death_dialog(self) -> None:
+        choices = ["Restore a saved game", "Restart from the beginning", "Quit"]
+        actions = ["restore", "restart", "quit"]
+        self.dialog = ListDialog(
+            f"Paul is dead. Score: {self.game.score} of {MAX_SCORE}.",
+            choices,
+            lambda i: self.do_action(actions[i]),
+            cancellable=False,
+        )
 
     def save_game(self, description: str) -> None:
         try:
@@ -252,7 +274,15 @@ class App:
         assert game.pic is not None
         self.screen.fill(PALETTE[BLACK])
         frame = game.pic.visual.copy()
-        game.ego.draw(frame, game.pic)
+        assert game.room is not None
+        ego_drawn = False
+        for surf, x, baseline in sorted(game.room.objects(game), key=lambda o: o[2]):
+            if not ego_drawn and baseline > game.ego.y:
+                game.ego.draw(frame, game.pic)
+                ego_drawn = True
+            frame.blit(surf, (x, baseline - surf.get_height() + 1))
+        if not ego_drawn:
+            game.ego.draw(frame, game.pic)
         pygame.transform.scale(
             frame, (PIC_W * 2, PIC_H), self.screen.subsurface(pygame.Rect(0, PIC_TOP, PIC_W * 2, PIC_H))
         )

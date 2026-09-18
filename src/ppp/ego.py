@@ -11,8 +11,9 @@ from dataclasses import dataclass, field
 
 import pygame
 
-from ppp.const import BLACK, BROWN, LRED, PALETTE, PIC_H, PIC_W, WHITE, YELLOW, priority_for_y
+from ppp.const import BLACK, BROWN, LRED, PIC_H, PIC_W, WHITE, YELLOW, priority_for_y
 from ppp.pic import Picture
+from ppp.sprite import from_rows, rows_of
 
 LEGEND = {"h": BLACK, "f": LRED, "w": WHITE, "k": BLACK, "g": YELLOW, "b": BROWN}
 
@@ -137,28 +138,12 @@ bb....bb
 """
 
 
-def _rows(block: str) -> list[str]:
-    rows = [r for r in block.strip("\n").split("\n")]
-    for r in rows:
-        assert len(r) == 8, f"sprite row must be 8 wide: {r!r}"
-    return rows
-
-
 def _frame(head: str, torso: str, legs: str) -> list[str]:
-    return _rows(head) + _rows(torso) + _rows(legs)
+    return rows_of(head, 8) + rows_of(torso, 8) + rows_of(legs, 8)
 
 
 def _surface(rows: list[str], mirror: bool = False) -> pygame.Surface:
-    h = len(rows)
-    surf = pygame.Surface((8, h))
-    key = (1, 2, 3)
-    surf.fill(key)
-    surf.set_colorkey(key)
-    for y, row in enumerate(rows):
-        for x, ch in enumerate(row):
-            if ch != ".":
-                surf.set_at((x, y), PALETTE[LEGEND[ch]])
-    return pygame.transform.flip(surf, True, False) if mirror else surf
+    return from_rows(rows, LEGEND, mirror)
 
 
 # AGI directions: 0 stop, 1 N, 2 NE, 3 E, 4 SE, 5 S, 6 SW, 7 W, 8 NW
@@ -245,9 +230,10 @@ class Ego:
     def _blocked(self, pic: Picture, nx: int, ny: int, horizon: int) -> bool:
         if ny < horizon:
             return True
-        # feet strip: bottom row of the sprite across the body width
+        # feet strip: bottom row of the sprite across the body width;
+        # pixels beyond the picture edge are open so Paul can walk off screen
         for px in range(nx + 1, nx + 7):
-            if pic.pri_at(px, ny) == 0:
+            if 0 <= px < PIC_W and pic.pri_at(px, ny) == 0:
                 return True
         return False
 
@@ -257,9 +243,9 @@ class Ego:
             return None
         dx, dy = DIR_DELTA[self.direction]
         nx, ny = self.x + dx * self.step, self.y + dy * self.step
-        if nx < -4:
+        if nx < 0:
             return "left"
-        if nx + self.width > PIC_W + 4:
+        if nx + self.width > PIC_W:
             return "right"
         if ny >= PIC_H:
             return "bottom"

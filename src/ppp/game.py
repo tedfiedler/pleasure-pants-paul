@@ -13,6 +13,7 @@ from ppp.pic import Picture
 from ppp.room import Room
 
 MAX_SCORE = 222
+START_MONEY = 94
 
 # AGI speed settings, in game cycles per second
 SPEEDS: dict[str, int] = {"slow": 10, "normal": 20, "fast": 40, "fastest": 80}
@@ -46,6 +47,9 @@ class Game:
     cycle_count: int = 0
     scored: set[str] = field(default_factory=set)
 
+    def __post_init__(self) -> None:
+        self.vars.setdefault("money", START_MONEY)
+
     # -- output ----------------------------------------------------------
 
     def print(self, text: str) -> None:
@@ -70,6 +74,12 @@ class Game:
     def set_speed(self, speed: str) -> None:
         if speed in SPEEDS:
             self.speed = speed
+
+    def die(self, text: str) -> None:
+        """A Sierra death: the message shows, then the app offers restore/restart/quit."""
+        self.print(text)
+        self.dead = True
+        self.ego.stop()
 
     # -- scoring & inventory --------------------------------------------
 
@@ -101,6 +111,8 @@ class Game:
         self.pic = Picture()
         room.draw(self.pic)
         self.room = room
+        self.ego.frozen = False
+        self.ego.visible = True
         room.enter(self, prev)
 
     def _edge_spawn(self, edge: str) -> None:
@@ -117,7 +129,7 @@ class Game:
     # -- per-cycle --------------------------------------------------------
 
     def cycle(self) -> None:
-        if self.room is None or self.pic is None or self.message is not None:
+        if self.room is None or self.pic is None or self.message is not None or self.dead:
             return
         self.cycle_count += 1
         edge = self.ego.update(self.pic, self.room.horizon)
@@ -143,7 +155,7 @@ class Game:
     # -- parser dispatch --------------------------------------------------
 
     def handle_input(self, text: str) -> None:
-        if self.room is None:
+        if self.room is None or self.dead:
             return
         p = parse(text)
         if p.empty:

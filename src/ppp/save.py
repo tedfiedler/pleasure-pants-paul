@@ -68,6 +68,7 @@ def apply(game: Game, data: dict[str, Any]) -> None:
     game.speed = str(data.get("speed", "normal"))
     game.cycle_count = int(data.get("cycle_count", 0))
     game.messages.clear()
+    game.dead = False
     game.new_room(int(data["room"]))
     game.messages.clear()  # room.enter() may greet; a restore is silent
     ego = data["ego"]

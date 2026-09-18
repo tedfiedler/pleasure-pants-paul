@@ -62,17 +62,18 @@ class TextDialog(Dialog):
 
 
 class ListDialog(Dialog):
-    def __init__(self, title: str, items: list[str], on_pick: Callable[[int], None]) -> None:
+    def __init__(self, title: str, items: list[str], on_pick: Callable[[int], None], cancellable: bool = True) -> None:
         self.title = title
         self.items = items
         self.on_pick = on_pick
         self.index = 0
+        self.cancellable = cancellable
 
     def handle(self, ev: pygame.event.Event) -> bool:
         if ev.type != pygame.KEYDOWN:
             return False
         if ev.key == pygame.K_ESCAPE:
-            return True
+            return self.cancellable
         if ev.key == pygame.K_UP:
             self.index = (self.index - 1) % len(self.items)
         elif ev.key == pygame.K_DOWN:
@@ -86,5 +87,7 @@ class ListDialog(Dialog):
         rows = [self.title, ""]
         first = len(rows)
         rows.extend(f" {item[:28]} " for item in self.items)
-        rows.extend(["", "Arrows to choose, ENTER to pick,", "ESC to cancel."])
+        rows.extend(["", "Arrows to choose, ENTER to pick" + (",", ".")[not self.cancellable]])
+        if self.cancellable:
+            rows.append("ESC to cancel.")
         return rows, first + self.index

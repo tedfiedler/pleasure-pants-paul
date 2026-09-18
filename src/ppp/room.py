@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import pygame
+
 from ppp.parser import Parsed
 from ppp.pic import Picture
 
@@ -34,6 +36,10 @@ class Room:
 
     def update(self, game: Game) -> None:
         """Per-cycle logic (timers, NPC animation, triggers)."""
+
+    def objects(self, game: Game) -> list[tuple[pygame.Surface, int, int]]:
+        """Animated objects as (surface, x, baseline_y), drawn in baseline order with Paul."""
+        return []
 
     def said(self, game: Game, p: Parsed) -> bool:
         """Handle a parsed command. Return True if handled."""

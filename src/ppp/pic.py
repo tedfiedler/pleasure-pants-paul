@@ -63,6 +63,10 @@ class Picture:
         for surf, col in self._targets(vis, pri):
             pygame.draw.polygon(surf, col, list(points))
 
+    def ellipse(self, x: int, y: int, w: int, h: int, vis: int | None, pri: int | None = None, width: int = 0) -> None:
+        for surf, col in self._targets(vis, pri):
+            pygame.draw.ellipse(surf, col, pygame.Rect(x, y, w, h), width)
+
     def fill(self, x: int, y: int, vis: int | None, pri: int | None = None) -> None:
         """Flood fill from (x, y), bounded by any colour other than the start colour."""
         for surf, col in self._targets(vis, pri):
