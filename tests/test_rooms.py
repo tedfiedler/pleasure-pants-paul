@@ -235,6 +235,17 @@ def test_open_alley_door_leads_to_back_room_and_brick_ejects(game: Game) -> None
     assert (game.ego.x, game.ego.y) == (104, 110)
 
 
+def test_remote_is_only_described_once_held(game: Game) -> None:
+    game.flags["backdoor_open"] = True
+    game.new_room(15)
+    drain(game)
+    game.handle_input("look at remote")
+    assert "You don't have one" in " ".join(drain(game))
+    game.give("remote")
+    game.handle_input("look at remote")
+    assert "three working buttons" in " ".join(drain(game))
+
+
 def test_remote_distracts_brick_and_stairs_score(game: Game) -> None:
     game.flags["backdoor_open"] = True
     game.new_room(15)

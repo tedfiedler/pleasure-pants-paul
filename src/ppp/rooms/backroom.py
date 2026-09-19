@@ -253,6 +253,8 @@ class BackRoom(Room):
             or p.said("change")
         ):
             self._remote(game)
+        elif p.said("look", "remote") and not game.has("remote"):
+            game.print("You don't have one. [Brick] does not look like [he|she] lends things.")
         elif p.said("use", "tv") or p.said("push", "tv") or p.said("open", "tv"):
             if game.flags.get("brick_distracted"):
                 game.print("Leave it. It's on the right channel now, and [Brick] agrees.")
